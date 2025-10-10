@@ -1,0 +1,72 @@
+/* ==========================
+   SIDEBAR ANIMATION
+========================== */
+.slideInFromRight {
+  animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.slideOutToRight {
+  animation: slideOutToRight 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.slideInFromLeft {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.slideOutToLeft {
+  animation: slideOutToLeft 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* ===== Keyframes ===== */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* ===== Overlay Fade ===== */
+.sidebar-overlay {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+.sidebar-overlay.active {
+  opacity: 1;
+}

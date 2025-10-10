@@ -1,0 +1,41 @@
+@import "~/assets/styles/main.scss";
+
+.menu::after {
+  content: "";
+  display: block;
+  height: 3px;
+  background-color: #333;
+
+  transform-origin: right;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+.menu:hover::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: rgba(255, 254, 254, 0.9);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+
+  animation: slideDown 0.5s;
+}
