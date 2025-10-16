@@ -40,7 +40,23 @@ const StoreProvider = ({ children }) => {
   };
 
   // list cart
-  const [listItemCart, setListItemCart] = useState(null);
+  const [listItemCart, setListItemCart] = useState([
+    {
+      item: {
+        productId: "64f100000000000000000001",
+        name: "Atlas",
+        author: "F. Scott Fitzgerald",
+        category: "Fiction",
+        quantity: 2,
+        description:
+          "A classic novel that explores themes of wealth, love, and the American Dream.",
+        price: 250,
+        formats: ["Hardcover", "Paperback", "Ebook"],
+        images: ["/product_img/p1/1.jpg", "/product_img/p1/2.jpg"]
+      }
+    }
+  ]);
+
   const [countItem, setCountItem] = useState(0); // count of list cart
   // checkout payment
   const [coupon, setCoupon] = useState(null);

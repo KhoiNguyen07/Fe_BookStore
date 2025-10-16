@@ -12,8 +12,7 @@ import { useStransferToVND } from "~/hooks/useStransferToVND";
 import FavoriteItemAnimation from "../FavoriteItemAnimation/FavoriteItemAnimation";
 
 const Product = ({ item, addCartBtn = false, setIsLoadingFunction }) => {
-  const { images, name, sizes, brand, price, _id } = item;
-  const [selectedSize, setSelectedSize] = useState(null);
+  const { images, name, brand, price, _id } = item;
   const [loading, setLoading] = useState(false);
   const {
     setIsOpenSidebar,
@@ -40,7 +39,7 @@ const Product = ({ item, addCartBtn = false, setIsLoadingFunction }) => {
   };
 
   // handle add to cart
-  const { handleAddToCart } = useAddToCart(item, selectedSize);
+  const { handleAddToCart } = useAddToCart(item);
 
   // handle add to favorite
   const { handleToFavorite } = useAddToFavorite(item, isWishList);
@@ -59,7 +58,7 @@ const Product = ({ item, addCartBtn = false, setIsLoadingFunction }) => {
             onClick={handleToDetailProduct}
             src={images[1]}
             alt={name}
-            className="cursor-pointer w-[300px] h-auto  absolute top-0 left-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100"
+            className="cursor-pointer w-[300px] h-auto  absolute top-0 left-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-50"
           />
           {/* sidebar on hover */}
           <div
@@ -97,54 +96,19 @@ const Product = ({ item, addCartBtn = false, setIsLoadingFunction }) => {
         </div>
 
         {!addCartBtn ? (
-          <div className="flex flex-col justify-center space-y-2">
+          <div className="flex flex-col justify-center space-y-2 text-center">
             <h2 className="text-xl mt-3">{name}</h2>
             <p className="text-third"> {formatVND(price)}</p>
           </div>
         ) : (
           <div className="flex flex-col justify-center items-center space-y-2">
-            <div className="mt-3 space-x-1">
-              {sizes.map((item) => (
-                <button
-                  onClick={() => {
-                    setSelectedSize(item);
-                  }}
-                  className={`px-3 py-1 border text-xs transition 
-            ${
-              selectedSize === item
-                ? "border-black bg-black text-white"
-                : "border-gray-300 hover:border-black"
-            }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <AnimatePresence>
-              {selectedSize && (
-                <motion.button
-                  key="clear-btn"
-                  type="button"
-                  onClick={() => setSelectedSize(null)}
-                  className="text-sm"
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  Clear
-                </motion.button>
-              )}
-            </AnimatePresence>
-
             <h2 className="text-xl mt-3">{name}</h2>
             <p className="text-third">{brand}</p>
             <p className="text-third"> {formatVND(price)}</p>
             <Button
               onClick={handleAddToCart}
               content={"ADD TO CARD"}
-              px={"px-5"}
+              px={"px-10"}
               py={"py-2"}
             />
           </div>

@@ -111,20 +111,18 @@ const ShoppingCart = () => {
                 <tbody>
                   {listItemCart?.map((items) => {
                     const { item } = items;
-                    const { image, name, price, quantity, size, productId } =
+                    const { images, name, price, quantity, size, productId } =
                       item;
 
                     return (
                       <tr className="border-b">
                         <td className="py-5">
                           <div className="flex space-x-5 items-start">
-                            <img src={image} className="w-24" alt="product" />
-                            <div className="text-xl">
-                              <h2 className="text-2xl">{name}</h2>
-                              <p>
-                                Size: <span className="text-third">{size}</span>
-                              </p>
-                            </div>
+                            <img
+                              src={images[0]}
+                              className="w-24"
+                              alt="product"
+                            />
                           </div>
                         </td>
                         <td
@@ -186,10 +184,6 @@ const ShoppingCart = () => {
                             <h2 className="text-lg font-semibold border-b pb-3 border-dashed">
                               {name}
                             </h2>
-
-                            <p className="border-b pb-3 border-dashed">
-                              Size: <span className="text-third">{size}</span>
-                            </p>
 
                             <p className="border-b pb-3 border-dashed">
                               SKU: {productId.slice(-5)}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Product from "~/components/Product/Product";
 import { productService } from "~/apis/productService";
 import BannerTimerCountdown from "~/components/BannerTimerCountdown/BannerTimerCountdown";
-import bannerImage from "~/assets/images/bannerBestProduct.jpeg";
+import bannerImage from "~/assets/images/bannerBestProduct.webp";
 import Loading from "~/components/Loading/Loading";
 import Button from "~/components/Button/Button";
 import { useLanguage } from "~/contexts/LanguageProvider";
@@ -12,258 +12,110 @@ const BestProducts = () => {
   const listProduct = [
     {
       _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      name: "Atlas",
+      author: "F. Scott Fitzgerald",
+      category: "Fiction",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A classic novel that explores themes of wealth, love, and the American Dream.",
+      price: 250,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p1/1.jpg", "/product_img/p1/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000002",
+      name: "Đũa",
+      author: "James Clear",
+      category: "Self-help",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A guide to building good habits, breaking bad ones, and mastering small behaviors for remarkable results.",
+      price: 300,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p2/1.jpg", "/product_img/p2/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000003",
+      name: "Bóng Trăng Trắng Ngà",
+      author: "Morgan Housel",
+      category: "Finance",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "Timeless lessons on wealth, greed, and happiness from real-world financial experiences.",
+      price: 280,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p3/1.jpg", "/product_img/p3/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000004",
+      name: "Tứ Trần Huyên Lỉnh",
+      author: "Harper Lee",
+      category: "Classic Literature",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A profound story of racial injustice and moral growth in the American South.",
+      price: 270,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p4/1.jpg", "/product_img/p4/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000005",
+      name: "1984",
+      author: "Bức họa múa rối xương",
+      category: "Dystopian",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A chilling portrayal of a totalitarian regime and the dangers of government surveillance.",
+      price: 260,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p5/1.jpg", "/product_img/p5/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000006",
+      name: "17 âm 1",
+      author: "Tara Westover",
+      category: "Biography",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A memoir about a woman who grows up in a strict, isolated family and pursues education against all odds.",
+      price: 320,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p6/1.jpg", "/product_img/p6/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000007",
+      name: "Hồ Xuân Hương",
+      author: "Paulo Coelho",
+      category: "Philosophical Fiction",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
+        "A symbolic tale about following one’s dreams and listening to the heart’s desires.",
+      price: 240,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p7/1.jpg", "/product_img/p7/2.jpg"]
     },
     {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
+      _id: "64f100000000000000000008",
+      name: "Người đẹp ngủ mê",
+      author: "Michelle Obama",
+      category: "Memoir",
       description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ]
+        "The inspiring life story of the former First Lady of the United States.",
+      price: 350,
+      formats: ["Hardcover", "Paperback", "Ebook"],
+      images: ["/product_img/p8/1.jpg", "/product_img/p8/2.jpg"]
     }
   ];
+
   const [activeCategory, setActiveCategory] = useState("all");
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Categories with translation keys
   const categoryKeys = [
     "all",
-    "fiction",
-    "nonfiction",
-    "mystery",
+    "music",
+    "architecture",
+    "horror",
+    "art",
     "romance",
-    "scifi",
-    "biography",
-    "history",
-    "selfhelp"
+    "poetry",
+    "novel",
+    "detective",
+    "historical",
+    "contemporary"
   ];
 
   // Get translated categories
@@ -359,7 +211,7 @@ const BestProducts = () => {
               : "opacity-100 translate-y-0"
           }`}
         >
-          <div className="col-span-2 row-span-2 relative h-64 md:h-96 lg:h-[720px] rounded-2xl shadow-lg transition-all duration-300 group">
+          <div className="col-span-2 row-span-2 relative h-64 md:h-96 lg:h-[820px] rounded-2xl shadow-lg transition-all duration-300 group">
             {/* Media wrapper: image scales only inside this box */}
             <div className="media-wrapper overflow-hidden rounded-2xl h-full">
               <img
