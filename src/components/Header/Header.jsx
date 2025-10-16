@@ -17,7 +17,6 @@ import { useLocation } from "react-router-dom";
 import { useLanguage } from "~/contexts/LanguageProvider";
 
 const Header = () => {
-  const { t } = useLanguage();
   const { boxIconArr, menuArr } = useMenuAndIcon();
 
   const {
@@ -46,32 +45,32 @@ const Header = () => {
     isOnclick
   } = useContext(StoreContext);
 
-  useEffect(() => {
-    if (userInfo) {
-      cartService
-        .getAllCart({ userId: userInfo._id })
-        .then((res) => {
-          setListItemCart(res.data);
-          setCountItem(totalItem(res.data));
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  // useEffect(() => {
+  //   if (userInfo) {
+  //     cartService
+  //       .getAllCart({ userId: userInfo._id })
+  //       .then((res) => {
+  //         setListItemCart(res.data);
+  //         setCountItem(totalItem(res.data));
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //       });
 
-      favoriteService
-        .getAllFavorite({ userId: userInfo._id })
-        .then((res) => {
-          setListItemFavoriteFunction(res.data);
-          setCountItemFavorFunction(res.data.length);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else {
-      setCountItem(0);
-      setCountItemFavorFunction(0);
-    }
-  }, [userInfo, isOnclick]);
+  //     favoriteService
+  //       .getAllFavorite({ userId: userInfo._id })
+  //       .then((res) => {
+  //         setListItemFavoriteFunction(res.data);
+  //         setCountItemFavorFunction(res.data.length);
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //       });
+  //   } else {
+  //     setCountItem(0);
+  //     setCountItemFavorFunction(0);
+  //   }
+  // }, [userInfo, isOnclick]);
 
   return (
     <>

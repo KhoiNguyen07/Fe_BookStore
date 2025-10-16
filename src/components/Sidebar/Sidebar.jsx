@@ -32,7 +32,7 @@ const Sidebar = ({
         <div
           className={`${animationClass} fixed top-0 ${
             position === "left" ? "left-0" : "right-0"
-          } h-screen w-[280px] md:w-[350px] z-50 flex flex-col bg-white`}
+          } h-screen w-[280px] md:w-[450px] z-50 flex flex-col bg-white`}
           style={{ zIndex: 60 }}
         >
           {/* toggle close */}

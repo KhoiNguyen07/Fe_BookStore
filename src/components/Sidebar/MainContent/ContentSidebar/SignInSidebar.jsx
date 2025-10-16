@@ -24,17 +24,24 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
     validationSchema: Yup.object({
       email: Yup.string()
         .email("Invalid email!")
-        .required("Email is required!"),
-      username: isRegister
-        ? Yup.string().required("Username is required!")
-        : "",
+        .when([], {
+          is: () => isRegister,
+          then: (schema) => schema.required("Email is required!"),
+          otherwise: (schema) => schema.notRequired()
+        }),
+      username: Yup.string().when([], {
+        is: () => isRegister,
+        then: (schema) => schema.required("Username is required!"),
+        otherwise: (schema) => schema.required("Username is required!")
+      }),
 
       password: Yup.string()
         .min(6, "Password must be at least 6 characters!")
         .required("Password is required!"),
-      cfmpassword: Yup.string().oneOf(
-        [Yup.ref("password"), null],
-        "Password must match"
+      cfmpassword: Yup.string().when("password", (password, schema) =>
+        isRegister
+          ? schema.oneOf([Yup.ref("password"), null], "Password must match")
+          : schema.notRequired()
       )
     }),
     onSubmit: async (values) => {
@@ -44,7 +51,7 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
         await authService
           .createNewUser({ email, password, username })
           .then((res) => {
-            setUserInfo(res.data);
+            setUserInfo(res.data.data);
             toast.success(res.data.message);
             setTimeout(() => {
               setIsOpenSidebar(false);
@@ -55,9 +62,10 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
           });
       } else {
         await authService
-          .loginAccount({ email, password })
+          .loginAccount({ username, password })
           .then((res) => {
-            setUserInfo(res.data);
+            console.log(res);
+            setUserInfo(res.data.data);
             // lưu userInfo vào localStorage (chuyển sang string)
             localStorage.setItem("userInfo", JSON.stringify(res.data));
             toast.success(res.data.message);
@@ -88,23 +96,23 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
       <HeaderSidebar titleSidebar={title} />
       <form onSubmit={formik.handleSubmit}>
         <div className="w-full">
-          <InputCustom
-            id="email"
-            label={"Email"}
-            type={"text"}
-            require={true}
-            formik={formik}
-          />
-
           {isRegister && (
             <InputCustom
-              id="username"
-              label={"Username"}
+              id="email"
+              label={"Email"}
               type={"text"}
               require={true}
               formik={formik}
             />
           )}
+
+          <InputCustom
+            id="username"
+            label={"Username"}
+            type={"text"}
+            require={true}
+            formik={formik}
+          />
           <InputCustom
             id="password"
             label={"Password"}

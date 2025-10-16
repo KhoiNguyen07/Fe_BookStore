@@ -1,12 +1,12 @@
 import axiosClient from "./axiosClient";
 
 const getById = async (id) => {
-  const result = await axiosClient.get(`/product/${id}`);
+  const result = await axiosClient.get(`/products/${id}`);
   return result;
 };
 
 const getAllProduct = async () => {
-  const result = await axiosClient.get("/product");
+  const result = await axiosClient.get("/products");
   return result;
 };
 

@@ -46,8 +46,6 @@ const Menu = ({
     }
   ];
 
-  console.log(t("nav.signin"));
-
   return (
     <>
       {to ? (

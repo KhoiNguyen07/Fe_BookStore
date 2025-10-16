@@ -2,288 +2,101 @@ import React, { useEffect, useState } from "react";
 import Product from "~/components/Product/Product";
 import { productService } from "~/apis/productService";
 import BannerTimerCountdown from "~/components/BannerTimerCountdown/BannerTimerCountdown";
-import bannerImage from "~/assets/images/bannerBestProduct.jpeg";
+import bannerImage from "~/assets/images/bannerBestProduct.webp";
 import Loading from "~/components/Loading/Loading";
 import Button from "~/components/Button/Button";
 import { useLanguage } from "~/contexts/LanguageProvider";
 
 const BestProducts = () => {
   const { t } = useLanguage();
-  const listProduct = [
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      sizes: ["40", "41", "42", "43", "44"],
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ],
-      relativeProduct: [
-        {
-          _id: "64f100000000000000000001",
-          name: "Nike V2K Run - Vintage Green",
-          description:
-            "Lightweight running shoes with breathable mesh and durable rubber sole.",
-          price: 1200,
-          sizes: ["40", "41", "42", "43", "44"],
-          images: [
-            "/product_img/1/1.jpeg",
-            "/product_img/1/2.jpeg",
-            "/product_img/1/3.jpeg",
-            "/product_img/1/4.jpeg"
-          ]
-        }
-      ]
-    },
-    {
-      _id: "64f100000000000000000001",
-      name: "Nike V2K Run - Vintage Green",
-      brand: "Nike",
-      category: "Running Shoes",
-      description:
-        "Lightweight running shoes with breathable mesh and durable rubber sole.",
-      price: 1200,
-      images: [
-        "/product_img/1/1.jpeg",
-        "/product_img/1/2.jpeg",
-        "/product_img/1/3.jpeg",
-        "/product_img/1/4.jpeg"
-      ]
-    }
-  ];
+  const [listProduct, setListProduct] = useState([]);
+  console.log(listProduct);
   const [activeCategory, setActiveCategory] = useState("all");
   const [isAnimating, setIsAnimating] = useState(false);
-
-  // Categories with translation keys
-  const categoryKeys = [
-    "all",
-    "fiction",
-    "nonfiction",
-    "mystery",
-    "romance",
-    "scifi",
-    "biography",
-    "history",
-    "selfhelp"
+  // manual mapping of category codes to translation keys
+  const categorie = [
+    { code: "LSP00", nameKey: "homepage.bestProducts.categories.all" },
+    { code: "LSP01", nameKey: "homepage.bestProducts.categories.romance" },
+    { code: "LSP02", nameKey: "homepage.bestProducts.categories.horror" },
+    { code: "LSP03", nameKey: "homepage.bestProducts.categories.fantasy" },
+    { code: "LSP04", nameKey: "homepage.bestProducts.categories.detective" },
+    { code: "LSP05", nameKey: "homepage.bestProducts.categories.novel" },
+    { code: "LSP06", nameKey: "homepage.bestProducts.categories.historical" },
+    { code: "LSP07", nameKey: "homepage.bestProducts.categories.literature" },
+    { code: "LSP08", nameKey: "homepage.bestProducts.categories.poetry" },
+    { code: "LSP09", nameKey: "homepage.bestProducts.categories.art" },
+    { code: "LSP10", nameKey: "homepage.bestProducts.categories.architecture" }
   ];
 
-  // Get translated categories
-  const categories = categoryKeys.map((key) => ({
-    key,
-    label: t(`homepage.bestProducts.categories.${key}`)
-  }));
+  // derive categories from fetched products (use mapping to show translated name but filter by code)
+  const categories = React.useMemo(() => {
+    const present = new Set(
+      listProduct.map((p) => p.categoryCode).filter(Boolean)
+    );
+    console.log("Product category codes found:", Array.from(present));
+
+    const result = [
+      { key: "all", label: t("homepage.bestProducts.categories.all") }
+    ];
+
+    // add mapped categories that exist in the data (skip LSP00 which maps to All)
+    categorie.forEach((c) => {
+      if (c.code === "LSP00") return; // skip LSP00 since we already have "all"
+      if (present.has(c.code)) {
+        result.push({ key: c.code, label: t(c.nameKey) });
+      }
+    });
+
+    // fallback: add unmapped codes with code as label
+    present.forEach((code) => {
+      if (code && !categorie.find((c) => c.code === code)) {
+        result.push({ key: code, label: code });
+      }
+    });
+
+    console.log("Final categories for tabs:", result);
+    return result;
+  }, [listProduct, t]);
+  useEffect(() => {
+    let intervalId;
+
+    const fetchData = () => {
+      productService
+        .getAllProduct()
+        .then((res) => {
+          // normalize to array
+          const data = res?.data?.data;
+          if (Array.isArray(data) && data.length > 0) {
+            setListProduct(data);
+            clearInterval(intervalId); // có data thì stop
+          }
+        })
+        .catch((err) => console.log(err));
+    };
+
+    // gọi lần đầu
+    fetchData();
+    // gọi lại mỗi 5s
+    intervalId = setInterval(fetchData, 5000);
+
+    // cleanup
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // (categories derived above)
 
   // assign categories to products cyclically so each tab shows something in demo
-  const productsWithCategory = React.useMemo(() => {
-    return listProduct.map((p, idx) => ({
-      ...p,
-      category: categoryKeys[(idx % (categoryKeys.length - 1)) + 1]
-    }));
-  }, [listProduct]);
+  // const productsWithCategory = React.useMemo(() => {
+  //   return listProduct.map((p, idx) => ({
+  //     ...p,
+  //     category: categoryKeys[(idx % (categoryKeys.length - 1)) + 1]
+  //   }));
+  // }, [listProduct]);
 
-  const filteredProducts = React.useMemo(() => {
-    if (activeCategory === "all") return productsWithCategory;
-    return productsWithCategory.filter((p) => p.category === activeCategory);
-  }, [productsWithCategory, activeCategory]);
+  // const filteredProducts = React.useMemo(() => {
+  //   if (activeCategory === "all") return productsWithCategory;
+  //   return productsWithCategory.filter((p) => p.category === activeCategory);
+  // }, [productsWithCategory, activeCategory]);
 
   const handleTabClick = (cat) => {
     if (cat === activeCategory) return;
@@ -292,31 +105,35 @@ const BestProducts = () => {
     setTimeout(() => setActiveCategory(cat), 80);
     setTimeout(() => setIsAnimating(false), 360);
   };
-  // const [listProduct, setListProduct] = useState(null);
 
-  // useEffect(() => {
-  //   let intervalId;
+  // filtered products by selected categoryCode
+  const filteredProducts = React.useMemo(() => {
+    if (!Array.isArray(listProduct)) return [];
+    if (activeCategory === "all") return listProduct;
+    return listProduct.filter((p) => p.categoryCode === activeCategory);
+  }, [listProduct, activeCategory]);
 
-  //   const fetchData = () => {
-  //     productService
-  //       .getAllProduct()
-  //       .then((res) => {
-  //         if (res.data && res.data.length > 0) {
-  //           setListProduct(res.data);
-  //           clearInterval(intervalId); // có data thì stop
-  //         }
-  //       })
-  //       .catch((err) => console.log(err));
-  //   };
+  // pick up to 12 random products from filteredProducts
+  const displayedProducts = React.useMemo(() => {
+    const arr = Array.isArray(filteredProducts) ? [...filteredProducts] : [];
 
-  //   // gọi lần đầu
-  //   fetchData();
-  //   // gọi lại mỗi 5s
-  //   intervalId = setInterval(fetchData, 5000);
+    // Fisher-Yates shuffle
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
 
-  //   // cleanup
-  //   return () => clearInterval(intervalId);
-  // }, []);
+    const limit = 8; // luôn lấy 12 sản phẩm
+    const result = arr.slice(0, limit);
+
+    console.log(
+      "filtered:",
+      filteredProducts.length,
+      "displayed:",
+      result.length
+    );
+    return result;
+  }, [filteredProducts, activeCategory]);
 
   return (
     <>
@@ -353,13 +170,13 @@ const BestProducts = () => {
         </div>
 
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-5 items-start transition-all duration-300 ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-5 items-start transition-all duration-300 ${
             isAnimating
               ? "opacity-60 -translate-y-2"
               : "opacity-100 translate-y-0"
           }`}
         >
-          <div className="col-span-2 row-span-2 relative h-64 md:h-96 lg:h-[720px] rounded-2xl shadow-lg transition-all duration-300 group">
+          <div className="col-span-2 row-span-2 relative h-64 md:h-96 lg:h-full rounded-2xl shadow-lg transition-all duration-300 group">
             {/* Media wrapper: image scales only inside this box */}
             <div className="media-wrapper overflow-hidden rounded-2xl h-full">
               <img
@@ -373,7 +190,7 @@ const BestProducts = () => {
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-2xl"></div>
 
             {/* Content overlay (separate from image so it won't scale). Make non-interactive so hovering it triggers parent hover; make CTA clickable. */}
-            <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-6 pointer-events-none">
+            <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-12 pointer-events-none">
               <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
                 <div className="mb-2">
                   <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-xs font-semibold rounded-full">
@@ -407,9 +224,9 @@ const BestProducts = () => {
           </div>
 
           {/* list product */}
-          {filteredProducts?.map((item, idx) => (
+          {displayedProducts.map((item, idx) => (
             <div
-              key={item._id || idx}
+              key={item._id || item.productCode || idx}
               className="transform transition-all duration-300 hover:-translate-y-1 h-full"
             >
               <Product item={item} />

@@ -4,7 +4,7 @@ import { ToastifyContext } from "~/contexts/ToastifyProvider";
 import { SidebarContext } from "~/contexts/SidebarProvider";
 import { cartService } from "~/apis/cartService";
 
-export const useAddToCart = (item, selectedSize, quantity = 1) => {
+export const useAddToCart = (item, quantity = 1) => {
   const { userInfo, setIsOnClickFunction } = useContext(StoreContext);
   const { setIsOpenSidebar, setTitleSidebar, titleSidebar } =
     useContext(SidebarContext);
@@ -15,10 +15,6 @@ export const useAddToCart = (item, selectedSize, quantity = 1) => {
       toast.warning("Must be sign in!");
       setIsOpenSidebar(true);
       setTitleSidebar({ ...titleSidebar, title: "Sign in" });
-      return;
-    }
-    if (!selectedSize) {
-      toast.warning("Choose your size!");
       return;
     }
 

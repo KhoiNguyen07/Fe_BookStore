@@ -10,6 +10,23 @@ const Footer = () => {
   const { t } = useLanguage();
   const [showTop, setShowTop] = useState(false);
   const [email, setEmail] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      sender: "bot",
+      text: "Hello! How can I help you today?",
+      time: "10:30"
+    },
+    {
+      id: 2,
+      sender: "bot",
+      text: "Feel free to ask about our books or any questions!",
+      time: "10:31"
+    }
+  ]);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -46,6 +63,13 @@ const Footer = () => {
     return () => io.disconnect();
   }, []);
 
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // simple client-side validation
@@ -60,6 +84,54 @@ const Footer = () => {
   };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (!chatMessage.trim()) return;
+
+    const newMessage = {
+      id: chatMessages.length + 1,
+      sender: "user",
+      text: chatMessage,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+
+    setChatMessages([...chatMessages, newMessage]);
+    setChatMessage("");
+
+    // Simulate bot response after 1 second
+    setTimeout(() => {
+      const botResponses = [
+        "Thank you for your message! Our team will get back to you soon.",
+        "I appreciate you reaching out! How can I assist you today?",
+        "Thanks for contacting us! Is there anything specific about our books you'd like to know?",
+        "Hello! I'm here to help you with any questions about our bookstore.",
+        "Great to hear from you! What kind of books are you looking for?",
+        "Thanks for your message! Feel free to ask about our latest arrivals.",
+        "I'm happy to help! Do you need recommendations for any particular genre?",
+        "Thank you for writing! Our customer service team is always ready to assist.",
+        "Hi there! I can help you find the perfect book for your needs.",
+        "Thanks for reaching out! Let me know if you need help with your order."
+      ];
+
+      const randomResponse =
+        botResponses[Math.floor(Math.random() * botResponses.length)];
+
+      const botResponse = {
+        id: chatMessages.length + 2,
+        sender: "bot",
+        text: randomResponse,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      };
+      setChatMessages((prev) => [...prev, botResponse]);
+    }, 1000);
+  };
 
   return (
     <footer className="bg-[#f5f5f5] text-gray-700">
@@ -269,11 +341,150 @@ const Footer = () => {
           </div>
         </div>
       </div>
+      {/* Chatbox */}
+      <div className="fixed bottom-24 right-6 z-50">
+        {/* Chat Toggle Button */}
+        <button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className={`w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-300 flex items-center justify-center ${
+            isChatOpen ? "rotate-45" : ""
+          }`}
+        >
+          {isChatOpen ? (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+          )}
+        </button>
+
+        {/* Chat Window */}
+        {isChatOpen && (
+          <div className="absolute bottom-16 right-0 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
+            {/* Chat Header */}
+            <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                <h3 className="font-semibold">BookStore Support</h3>
+              </div>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-xs px-3 py-2 rounded-lg ${
+                      message.sender === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    <p className="text-sm">{message.text}</p>
+                    <p
+                      className={`text-xs mt-1 ${
+                        message.sender === "user"
+                          ? "text-blue-100"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {message.time}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Chat Input */}
+            <form
+              onSubmit={handleChatSubmit}
+              className="p-4 border-t border-gray-200"
+            >
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatMessage.trim()}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+
       {/* Back to top button */}
       <button
         onClick={scrollToTop}
         aria-label={t("footer.backToTop")}
-        className={`fixed right-6 bottom-6 w-12 h-12 rounded-full bg-black text-white shadow-lg flex items-center justify-center transition-opacity ${
+        className={`fixed right-6 bottom-6 w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center transition-opacity ${
           showTop ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
