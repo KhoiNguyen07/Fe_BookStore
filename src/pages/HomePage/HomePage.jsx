@@ -14,7 +14,7 @@ const HomePage = () => {
   return (
     <>
       {/* Header */}
-      <div className="relative  z-40">
+      <div className="relative z-30">
         <section className="absolute top-0 left-0 right-0">
           <Header />
         </section>

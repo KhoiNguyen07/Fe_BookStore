@@ -68,13 +68,7 @@ const About = () => {
               MongoDB to build a modern and convenient shoe e-commerce website.
             </p>
           </div>
-          <div className="md:w-1/2">
-            <img
-              src={img1}
-              alt="Giày công nghệ"
-              className="rounded-xl shadow-lg hover:scale-105 transition-transform duration-500"
-            />
-          </div>
+          <div className="md:w-1/2"></div>
         </FadeSection>
 
         {/* Section 2 */}
@@ -89,13 +83,7 @@ const About = () => {
               scanning.
             </p>
           </div>
-          <div className="md:w-1/2">
-            <img
-              src={img2}
-              alt="Công nghệ giày"
-              className="rounded-xl shadow-lg hover:scale-105 transition-transform duration-500"
-            />
-          </div>
+          <div className="md:w-1/2"></div>
         </FadeSection>
 
         {/* Section 3 */}

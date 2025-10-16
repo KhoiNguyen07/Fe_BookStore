@@ -18,10 +18,10 @@ const translations = {
       shop: "Our Shop",
       about: "About us",
       contact: "Contacts",
-      cart: "Cart",
+      cart: "cart",
       search: "Search",
       signin: "Sign in",
-      favorite: "Favorite"
+      favorite: "favorite"
     },
 
     // Homepage sections
@@ -57,10 +57,21 @@ const translations = {
         shopNow: "Shop Now",
         categories: {
           all: "All Products",
+          music: "Music",
+          architecture: "Architecture",
+          horror: "Horror",
+          art: "Art",
           fiction: "Fiction",
           nonfiction: "Non-Fiction",
           mystery: "Mystery",
           romance: "Romance",
+          poetry: "Poetry",
+          novel: "Novel",
+          detective: "Detective",
+          historical: "Historical",
+          literature: "Literature",
+          fantasy: "Fantasy",
+          contemporary: "Contemporary",
           scifi: "Sci-Fi",
           biography: "Biography",
           history: "History",
@@ -271,10 +282,10 @@ const translations = {
       shop: "Cửa hàng",
       about: "Về chúng tôi",
       contact: "Liên hệ",
-      cart: "Giỏ hàng",
+      cart: "cart",
       search: "Tìm kiếm",
       signin: "Đăng nhập",
-      favorite: "Yêu thích"
+      favorite: "favorite"
     },
 
     // Homepage sections
@@ -305,15 +316,26 @@ const translations = {
       },
       bestProducts: {
         title: "Sản Phẩm Nổi Bật",
-        subtitle: "Khám phá những cuốn sách tuyệt vời và bộ sưu tập cao cấp",
+        subtitle: "Khám phá những bộ sưu tập cao cấp",
         viewAll: "Xem Tất Cả Sản Phẩm",
         shopNow: "Mua Ngay",
         categories: {
-          all: "Tất Cả Sản Phẩm",
+          all: "Tất Cả",
+          music: "Âm Nhạc",
+          architecture: "Kiến Trúc",
+          horror: "Kinh Dị",
+          art: "Nghệ Thuật",
           fiction: "Tiểu Thuyết",
           nonfiction: "Phi Tiểu Thuyết",
           mystery: "Trinh Thám",
           romance: "Lãng Mạn",
+          poetry: "Thơ",
+          novel: "Tiểu Thuyết",
+          detective: "Trinh Thám",
+          historical: "Lịch Sử",
+          literature: "Văn Học",
+          fantasy: "Viễn Tưởng",
+          contemporary: "Đương Đại",
           scifi: "Khoa Học Viễn Tưởng",
           biography: "Tiểu Sử",
           history: "Lịch Sử",

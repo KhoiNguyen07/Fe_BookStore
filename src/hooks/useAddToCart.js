@@ -4,7 +4,7 @@ import { ToastifyContext } from "~/contexts/ToastifyProvider";
 import { SidebarContext } from "~/contexts/SidebarProvider";
 import { cartService } from "~/apis/cartService";
 
-export const useAddToCart = (item, selectedSize, quantity = 1) => {
+export const useAddToCart = (item, quantity = 1, size = null) => {
   const { userInfo, setIsOnClickFunction } = useContext(StoreContext);
   const { setIsOpenSidebar, setTitleSidebar, titleSidebar } =
     useContext(SidebarContext);
@@ -14,32 +14,39 @@ export const useAddToCart = (item, selectedSize, quantity = 1) => {
     if (!userInfo) {
       toast.warning("Must be sign in!");
       setIsOpenSidebar(true);
-      setTitleSidebar({ ...titleSidebar, title: "Sign in" });
-      return;
-    }
-    if (!selectedSize) {
-      toast.warning("Choose your size!");
+      setTitleSidebar({ ...titleSidebar, title: "Sign in", key: "signin" });
       return;
     }
 
+    // normalize customerCode and productCode across possible shapes
+    const customerCode =
+      userInfo?.customerCode ||
+      userInfo?.customer_id ||
+      userInfo?._id ||
+      userInfo?.id;
+    const productCode =
+      item?.productCode || item?.productId || item?._id || item?.id;
+
     const data = {
-      userId: userInfo._id,
-      item: {
-        productId: item._id,
-        name: item.name,
-        size: selectedSize,
-        quantity: quantity,
-        image: item.images[0],
-        price: item.price
-      }
+      customerCode,
+      productCode,
+      quantity: quantity
     };
+
+    // include size if provided (optional)
+    if (size) data.size = size;
+
+    console.log("AddToCart payload:", data, "userInfo:", userInfo);
 
     cartService
       .createItem(data)
       .then((res) => {
+        console.log("createItem response:", res);
         setIsOpenSidebar(true);
-        setTitleSidebar({ ...titleSidebar, title: "cart" });
-        toast.success(res.data.message);
+        setTitleSidebar({ ...titleSidebar, title: "cart", key: "cart" });
+        toast.success(
+          res?.data?.message || res?.data?.data?.message || "Added to cart"
+        );
         setIsOnClickFunction((prev) => !prev);
       })
       .catch((err) => {

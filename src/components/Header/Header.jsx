@@ -17,7 +17,6 @@ import { useLocation } from "react-router-dom";
 import { useLanguage } from "~/contexts/LanguageProvider";
 
 const Header = () => {
-  const { t } = useLanguage();
   const { boxIconArr, menuArr } = useMenuAndIcon();
 
   const {
@@ -49,20 +48,23 @@ const Header = () => {
   useEffect(() => {
     if (userInfo) {
       cartService
-        .getAllCart({ userId: userInfo._id })
+        .getAllCart(userInfo)
         .then((res) => {
-          setListItemCart(res.data);
-          setCountItem(totalItem(res.data));
+          // API returns array inside res.data.data
+          const list = res?.data?.data || res?.data || [];
+          setListItemCart(list);
+          setCountItem(totalItem(list));
         })
         .catch((err) => {
           console.log(err);
         });
 
       favoriteService
-        .getAllFavorite({ userId: userInfo._id })
+        .getAllFavorite(userInfo)
         .then((res) => {
-          setListItemFavoriteFunction(res.data);
-          setCountItemFavorFunction(res.data.length);
+          const list = res?.data?.data || res?.data || [];
+          setListItemFavoriteFunction(list);
+          setCountItemFavorFunction(list.length);
         })
         .catch((err) => {
           console.log(err);
@@ -76,13 +78,13 @@ const Header = () => {
   return (
     <>
       <div
-        className={`${
+        className={` ${
           fixedNavbar
             ? "navbar text-black"
             : location.pathname !== "/"
             ? "text-black"
             : "text-white"
-        }`}
+        } `}
       >
         <div className="container flex flex-col xl:flex-row space-y-2 justify-center items-center py-5">
           {/* Left content */}
