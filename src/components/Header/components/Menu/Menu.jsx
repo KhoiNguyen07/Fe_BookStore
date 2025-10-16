@@ -5,6 +5,7 @@ import { StoreContext } from "~/contexts/StoreProvider";
 import { showConfirmToast } from "~/utils/showConfirmToast";
 import { CiUser } from "react-icons/ci";
 import { useLanguage } from "~/contexts/LanguageProvider";
+import { SearchContext } from "~/contexts/SearchProvider";
 
 const Menu = ({
   title,
@@ -16,6 +17,8 @@ const Menu = ({
 }) => {
   const { t } = useLanguage();
   const { userInfo, setUserInfo, setCountItem } = useContext(StoreContext);
+  const { setIsOpenSearchFunction: contextSetIsOpenSearch } =
+    useContext(SearchContext);
   const navigate = useNavigate();
   const confirmLogout = () => {
     showConfirmToast({
@@ -46,40 +49,47 @@ const Menu = ({
     }
   ];
 
-  console.log(t("nav.signin"));
-
   return (
     <>
       {to ? (
         <Link to={to} className="hidden xl:block menu">
           {title}
         </Link>
-      ) : userInfo ? (
-        title == t("nav.search") ? (
-          <button
-            className="hidden xl:block menu"
-            onClick={() => {
+      ) : title === t("nav.search") ? (
+        // Search button should be available regardless of login state and language
+        <button
+          className="hidden xl:block menu"
+          onClick={() => {
+            // prefer prop setter, fall back to context setter
+            if (typeof setIsOpenSearchFunction === "function") {
               setIsOpenSearchFunction(true);
-            }}
-          >
-            {title}
+            } else if (typeof contextSetIsOpenSearch === "function") {
+              contextSetIsOpenSearch(true);
+            }
+          }}
+        >
+          {title}
+        </button>
+      ) : userInfo ? (
+        <DropdownCustom items={itemPageAfterUserLogin}>
+          <button type="button" className="menu flex items-center gap-2">
+            {/* Desktop: hiện tên + icon */}
+            <span className="hidden xl:flex items-center gap-1">
+              {userInfo.username}
+            </span>
           </button>
-        ) : (
-          <DropdownCustom items={itemPageAfterUserLogin}>
-            <button type="button" className="menu flex items-center gap-2">
-              {/* Desktop: hiện tên + icon */}
-              <span className="hidden xl:flex items-center gap-1">
-                {userInfo.username}
-              </span>
-            </button>
-          </DropdownCustom>
-        )
+        </DropdownCustom>
       ) : (
         <button
           type="button"
           onClick={() => {
-            setIsOpenSidebar(title === t("nav.signin"));
-            setTitleSidebar({ ...titleSidebar, icon: "", title: title });
+            const shouldOpen = title === t("nav.signin");
+            setIsOpenSidebar(shouldOpen);
+            // set a stable key for the sidebar to avoid localization issues
+            const key = shouldOpen
+              ? "signin"
+              : (titleSidebar && titleSidebar.key) || "";
+            setTitleSidebar({ ...titleSidebar, icon: "", title: title, key });
           }}
           className="hidden xl:block menu"
         >

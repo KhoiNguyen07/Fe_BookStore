@@ -21,9 +21,11 @@ const OrderPayment = () => {
   const { toast } = useContext(ToastifyContext);
   const [isCash, setIsCash] = useState(false);
   const { order, setCurrentTab, setOrderFunction } = useContext(StoreContext);
+
   const { _id, totalPriceOrder } = order;
   const [isSuccessPayment, setIsSuccessPayment] = useState(false);
-  const imgURL = `https://qr.sepay.vn/img?acc=VQRQADYBO0539&bank=MBBank&amount=${totalPriceOrder}&des=${_id}`;
+  // const imgURL = `https://qr.sepay.vn/img?acc=VQRQADYBO0539&bank=MBBank&amount=${totalPriceOrder}&des=${_id}`;
+  const imgURL = `https://qr.sepay.vn/img?acc=VQRQADYBO0539&bank=MBBank&amount=100000&des=$khoinguyen`;
 
   const VAInfo = {
     accountNumber: "VQRQADYBO0539",
@@ -44,37 +46,37 @@ const OrderPayment = () => {
     localStorage.removeItem("countdownEndTime");
   };
 
-  const handleCheckPayment = () => {
-    const data = { id: _id };
-    orderService
-      .findOneById(data)
-      .then((res) => {
-        if (res.data.paymentMethod == "cash") {
-          setIsCash(true);
-          return;
-        }
+  // const handleCheckPayment = () => {
+  //   const data = { id: _id };
+  //   orderService
+  //     .findOneById(data)
+  //     .then((res) => {
+  //       if (res.data.paymentMethod == "cash") {
+  //         setIsCash(true);
+  //         return;
+  //       }
 
-        if (res.data.isPayment !== false) {
-          clearInterval(interval);
-          historyTransferService
-            .findOneByOrderId({ orderId: _id })
-            .then((res) => {
-              setIsSuccessPayment(res.data.success);
-              res.data.success
-                ? handleSuccess(res.data.success)
-                : toast.error(res.data.message);
-            })
-            .catch();
-        }
-      })
-      .catch();
-  };
+  //       if (res.data.isPayment !== false) {
+  //         clearInterval(interval);
+  //         historyTransferService
+  //           .findOneByOrderId({ orderId: _id })
+  //           .then((res) => {
+  //             setIsSuccessPayment(res.data.success);
+  //             res.data.success
+  //               ? handleSuccess(res.data.success)
+  //               : toast.error(res.data.message);
+  //           })
+  //           .catch();
+  //       }
+  //     })
+  //     .catch();
+  // };
 
-  useEffect(() => {
-    interval = setInterval(() => {
-      handleCheckPayment();
-    }, 5000);
-  }, []);
+  // useEffect(() => {
+  //   interval = setInterval(() => {
+  //     handleCheckPayment();
+  //   }, 5000);
+  // }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 5000);

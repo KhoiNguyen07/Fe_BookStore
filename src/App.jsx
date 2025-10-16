@@ -1,15 +1,19 @@
 import useRouteCustom from "./routes/useRouteCustom";
 import usePageLoading from "./hooks/usePageLoading";
 import Sidebar from "./components/Sidebar/Sidebar";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { SidebarContext } from "./contexts/SidebarProvider";
 import Search from "./components/Search/Search";
 import { SearchContext } from "./contexts/SearchProvider";
 
 function App() {
-  const { isOpenSidebar, setIsOpenSidebar, contentSidebar, titleSidebar } =
-    useContext(SidebarContext);
-  const { sidebarPosition } = useContext(SidebarContext);
+  const {
+    isOpenSidebar,
+    setIsOpenSidebar,
+    contentSidebar,
+    titleSidebar,
+    sidebarPosition
+  } = useContext(SidebarContext);
   const { isOpenSearch, setIsOpenSearchFunction } = useContext(SearchContext);
 
   const routes = useRouteCustom();

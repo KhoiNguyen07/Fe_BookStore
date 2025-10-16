@@ -5,7 +5,7 @@ import Header from "~/components/Header/Header";
 import SubRoutePage from "~/pages/OurShop/components/SubRoutePage/SubRoutePage";
 import SortProduct from "~/pages/OurShop/components/SortProduct/SortProduct";
 import ShowAllProduct from "~/pages/OurShop/components/ShowAllProduct/ShowAllProduct";
-import bannerImage from "~/assets/images/bannerOurShop.jpeg";
+import bannerImage from "~/assets/images/detail/bannerDetailProduct.webp";
 import { productService } from "~/apis/productService";
 import { useSorting } from "~/hooks/useSorting";
 import Button from "~/components/Button/Button";
@@ -16,8 +16,8 @@ const sortArr = [
   { title: "Sort by price: high to low", value: "descending" }
 ];
 const itemPerPageArr = [
-  { title: "4", value: 4 },
-  { title: "8", value: 8 },
+  { title: "9", value: 9 },
+  { title: "18", value: 18 },
   { title: "All", value: 0 }
 ];
 
@@ -44,7 +44,7 @@ const OurShop = () => {
     productService
       .getAllProduct()
       .then((res) => {
-        setListProduct(res.data);
+        setListProduct(res.data.data);
       })
       .catch((err) => console.log(err));
   }, []);
@@ -89,10 +89,12 @@ const OurShop = () => {
             updateSetListProductRender={updateSetListProductRender}
           />
         </section>
+
         {/* Show products */}
         <section className="px-3 md:px-0">
           <ShowAllProduct listProduct={listProductRender} />
         </section>
+
         {/* Loading more product */}
         {listProductRender.length != listProduct.length && (
           <section>

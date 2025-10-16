@@ -8,6 +8,20 @@ import OurShop from "~/pages/OurShop/OurShop";
 import Order from "~/pages/Order/Order";
 import PageNotFound from "~/components/PageNotFound/PageNotFound";
 import About from "~/pages/About/About";
+import AdminDashboard from "~/pages/Admin/AdminDashboard";
+import RolesPage from "~/pages/Admin/RolesPage";
+import AccountsPage from "~/pages/Admin/AccountsPage";
+import CustomerTypesPage from "~/pages/Admin/CustomerTypesPage";
+import CustomersPage from "~/pages/Admin/CustomersPage";
+import SuppliersPage from "~/pages/Admin/Supplier/SuppliersPage";
+import ProductCategoriesPage from "~/pages/Admin/ProductCategoriesPage";
+import ProductsPage from "~/pages/Admin/Product/ProductsPage";
+import PriceHistoryPage from "~/pages/Admin/PriceHistory/PriceHistoryPage";
+import WarehousePage from "~/pages/Admin/Warehouse/WarehousePage";
+import OrdersPage from "~/pages/Admin/OrdersPage";
+import ImportInvoicesPage from "~/pages/Admin/ImportInvoice/ImportInvoicesPage";
+import AdminApprovalPage from "~/pages/Admin/ImportInvoice/AdminApprovalPage";
+import ImportInvoicePrint from "~/pages/Admin/ImportInvoice/ImportInvoicePrint";
 
 const useRouteCustom = () => {
   const elements = useRoutes([
@@ -38,6 +52,62 @@ const useRouteCustom = () => {
     {
       path: path.Order,
       element: <Order />
+    },
+    {
+      path: path.Admin,
+      element: <AdminDashboard />
+    },
+    {
+      path: path.AdminRoles,
+      element: <RolesPage />
+    },
+    {
+      path: path.AdminAccounts,
+      element: <AccountsPage />
+    },
+    {
+      path: path.AdminCustomerTypes,
+      element: <CustomerTypesPage />
+    },
+    {
+      path: path.AdminCustomers,
+      element: <CustomersPage />
+    },
+    {
+      path: path.AdminSuppliers,
+      element: <SuppliersPage />
+    },
+    {
+      path: path.AdminProductCategories,
+      element: <ProductCategoriesPage />
+    },
+    {
+      path: path.AdminProducts,
+      element: <ProductsPage />
+    },
+    {
+      path: path.AdminPriceHistory,
+      element: <PriceHistoryPage />
+    },
+    {
+      path: path.AdminInventory,
+      element: <WarehousePage />
+    },
+    {
+      path: path.AdminOrders,
+      element: <OrdersPage />
+    },
+    {
+      path: path.AdminImportInvoices,
+      element: <ImportInvoicesPage />
+    },
+    {
+      path: path.AdminImportDetails,
+      element: <AdminApprovalPage />
+    },
+    {
+      path: path.AdminImportPrint,
+      element: <ImportInvoicePrint />
     }
   ]);
   return elements;

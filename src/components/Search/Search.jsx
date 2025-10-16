@@ -12,12 +12,10 @@ const Search = ({ isOpenSearch, setIsOpenSearchFunction }) => {
   const [listSearch, setListSearch] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleSearch = (value) => {
-    const data = { name: value };
-
     productService
-      .searchProduct(data)
+      .searchProduct(value)
       .then((res) => {
-        setListSearch(res.data);
+        setListSearch(res.data.data);
       })
       .catch((err) => console.error(err));
   };
@@ -50,7 +48,8 @@ const Search = ({ isOpenSearch, setIsOpenSearchFunction }) => {
           <>
             <motion.div
               onClick={() => setIsOpenSearchFunction(false)}
-              className="fixed inset-0 bg-black/50 z-20"
+              className="fixed inset-0 bg-black/50"
+              style={{ zIndex: 100 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -58,9 +57,10 @@ const Search = ({ isOpenSearch, setIsOpenSearchFunction }) => {
 
             {/* Modal */}
             <motion.div
-              className={`fixed z-50 overflow-scroll bg-white ${
+              className={`fixed overflow-scroll bg-white ${
                 listSearch && listSearch.length != 0 ? "h-full" : "h-3/6"
               } w-full`}
+              style={{ zIndex: 110 }}
               initial={{ y: -100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -100, opacity: 0 }}

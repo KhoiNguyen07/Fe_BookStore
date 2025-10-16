@@ -9,6 +9,7 @@ import { orderService } from "~/apis/orderService";
 import { ToastifyContext } from "~/contexts/ToastifyProvider";
 import { useNavigate } from "react-router-dom";
 import { useStransferToVND } from "~/hooks/useStransferToVND";
+import { buildImageUrl } from "~/lib/utils";
 
 const paymentArr = [
   {
@@ -41,59 +42,101 @@ const Checkout = () => {
 
   const formik = useFormik({
     initialValues: {
-      firstName: "",
-      lastName: "",
-      country: "",
-      streetAddress: "",
-      city: "",
-      email: "",
       phoneNumber: "",
-      note: "",
-      paymentMethod: "online"
+      promotionCode: "",
+      address: "",
+      paymentMethod: "online",
+      note: ""
     },
     validationSchema: Yup.object({
-      firstName: Yup.string()
-        .required("First name is required")
-        .max(50, "First name must be less than 50 characters"),
-      lastName: Yup.string()
-        .required("Last name is required")
-        .max(50, "Last name must be less than 50 characters"),
-      country: Yup.string().required("Country is required"),
-      streetAddress: Yup.string().required("Street address is required"),
-      city: Yup.string().required("City is required"),
-      email: Yup.string()
-        .email("Invalid email format")
-        .required("Email is required"),
       phoneNumber: Yup.string()
         .matches(
           /^[0-9]{10,15}$/,
           "Phone number must be between 10 and 15 digits"
         )
         .required("Phone number is required"),
-      note: Yup.string().max(500, "Note must be less than 500 characters"),
-      paymentMethod: Yup.string().required("Payment method is required")
+      promotionCode: Yup.string().max(
+        50,
+        "Promotion code must be less than 50 characters"
+      ),
+      address: Yup.string().required("Address is required"),
+      paymentMethod: Yup.string().required("Payment method is required"),
+      note: Yup.string().max(500, "Note must be less than 500 characters")
     }),
     onSubmit: (values) => {
-      const products = listItemCart.map(({ item }) => {
-        const data = {
-          productId: item.productId,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          size: item.size,
-          totalPrice: (item.quantity * item.price).toFixed(2)
+      // Map cart items to details array with productCode and quantity
+      const details = listItemCart.map((entry) => {
+        const it = entry?.item ? entry.item : entry;
+        const productCode =
+          it.productCode || it.productId || it.id || it._id || "";
+        const quantity = Number(it.quantity ?? it.qty ?? 1);
+
+        return {
+          productCode,
+          quantity
         };
-        return data;
       });
 
+      // Calculate discounts: member discount and coupon discount
+      // Compute subtotal based on discounted prices (if item.discountValue provided)
+      const subtotal =
+        (listItemCart || []).reduce((acc, it) => {
+          const unit = Number(it.unitPrice || it.price || 0);
+          const discountPercent = Number(it.discountValue) || 0;
+          const discountedPrice = unit * (1 - discountPercent);
+          const qty = Number(it.quantity ?? it.qty ?? 1);
+          return acc + discountedPrice * qty;
+        }, 0) || 0;
+
+      const memberDiscountPercent = Number(userInfo?.memberDiscount) || 0;
+      const memberDiscountAmount = Number(
+        (subtotal * memberDiscountPercent).toFixed(0)
+      );
+      const couponDiscountAmount =
+        coupon && coupon !== "unvalid" && coupon.value
+          ? Number((subtotal - subtotal * coupon.value).toFixed(0))
+          : 0;
+
+      const totalDiscount = memberDiscountAmount + couponDiscountAmount;
+
+      // Collect promotion codes from products and user info
+      const productPromotionCodes = (listItemCart || []).flatMap((entry) => {
+        const it = entry?.item ? entry.item : entry;
+        const p = it?.promotionCode || it?.promotion_code || it?.promotionCodes;
+        if (!p) return [];
+        return Array.isArray(p) ? p : [p];
+      });
+
+      // include promotion codes from userInfo.promotion_code (if present) + product-level codes
+      const initialUserPromotions = userInfo?.promotion_code
+        ? Array.isArray(userInfo.promotion_code)
+          ? userInfo.promotion_code
+          : [userInfo.promotion_code]
+        : [];
+
+      const promotionCodes = Array.from(
+        new Set(
+          [...initialUserPromotions, ...productPromotionCodes].filter(Boolean)
+        )
+      );
+
       const data = {
-        ...values,
-        userId: userInfo._id,
-        coupon: coupon ? coupon.code : "",
-        listProduct: products,
-        totalPriceOrder: coupon
-          ? totalPrice(listItemCart) * coupon.value
-          : totalPrice(listItemCart)
+        customerCode:
+          userInfo?.customerCode || userInfo?._id || userInfo?.userId || "",
+        employeeCode: "",
+        // promotionCodes: combine user-level promotions and product-level promotions
+        promotionCodes: promotionCodes,
+        orderType: "Online",
+        paymentMethod: values.paymentMethod === "cash" ? "Cash" : "QR",
+        phoneNumber: values.phoneNumber || "",
+        // `discount` field will carry the coupon code (or empty string)
+        discount:
+          coupon && coupon !== "unvalid" && coupon.code ? coupon.code : "",
+        note: values.note || "",
+        address:
+          values.address ||
+          `${values.streetAddress || ""}, ${values.city || ""}`,
+        details: details
       };
 
       orderService
@@ -101,6 +144,7 @@ const Checkout = () => {
         .then((res) => {
           setOrderFunction(res.data);
           setCurrentTab(2);
+          toast.success("Order created successfully!");
         })
         .catch((err) => {
           console.log(err);
@@ -108,6 +152,8 @@ const Checkout = () => {
         });
     }
   });
+
+  // no editable customerName field — customer name is taken from logged-in user info
 
   useEffect(() => {
     return () => {
@@ -120,92 +166,53 @@ const Checkout = () => {
       <form onSubmit={formik.handleSubmit}>
         <div className="flex flex-wrap xl:flex-nowrap gap-3">
           <div className="w-full xl:w-4/6">
-            {/* billing details */}
+            {/* removed separate Customer Information section to match API payload structure */}
+
+            {/* shipping & contact (simplified to match API) */}
             <div>
               <h2 className="pt-10 pb-3 border-b-2 uppercase text-xl">
-                billing details
+                Shipping & Contact
               </h2>
-              {/* form */}
               <div className="mt-5">
-                {/*name input  */}
-                <div className="flex justify-between space-x-10">
-                  <div className="flex-1">
-                    <InputCustom
-                      id={"firstName"}
-                      label={"First name"}
-                      type={"text"}
-                      placeholder={"First name"}
-                      require={true}
-                      formik={formik}
-                    />
+                {/* show logged in user name (not editable) */}
+                {userInfo && (
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-500">
+                      Recipient:{" "}
+                      <strong>
+                        {userInfo.customerName ||
+                          userInfo.fullName ||
+                          userInfo.name ||
+                          userInfo.email}
+                      </strong>
+                    </p>
                   </div>
-                  <div className="flex-1">
-                    <InputCustom
-                      id={"lastName"}
-                      label={"Last name"}
-                      type={"text"}
-                      placeholder={"Last name"}
-                      require={true}
-                      formik={formik}
-                    />
-                  </div>
-                </div>
-                {/* Country region */}
-                <div className="">
-                  <InputCustom
-                    id={"country"}
-                    label={"Country / Region"}
-                    type={"text"}
-                    placeholder={"Country / Region"}
-                    require={true}
-                    formik={formik}
-                  />
-                </div>
-                {/* Street address */}
-                <div className="">
-                  <InputCustom
-                    id={"streetAddress"}
-                    label={"Street Address"}
-                    type={"text"}
-                    placeholder={"House number and street name"}
-                    require={true}
-                    formik={formik}
-                  />
-                </div>
-                {/* town city */}
-                <div className="">
-                  <InputCustom
-                    id={"city"}
-                    label={"Town / City"}
-                    type={"text"}
-                    placeholder={"Town / City"}
-                    require={true}
-                    formik={formik}
-                  />
-                </div>
-                {/* email */}
-                <div className="">
-                  <InputCustom
-                    id={"email"}
-                    label={"Email Address"}
-                    type={"text"}
-                    placeholder={"Email address"}
-                    require={true}
-                    formik={formik}
-                  />
-                </div>
-                {/* phone number */}
-                <div className="">
+                )}
+
+                <div className="mt-3">
                   <InputCustom
                     id={"phoneNumber"}
-                    label={"Phone"}
+                    label={"Phone Number"}
                     type={"text"}
-                    placeholder={"Phone"}
+                    placeholder={"0912345678"}
                     require={true}
                     formik={formik}
                   />
                 </div>
-                {/* note */}
+
+                <div className="mt-3">
+                  <InputCustom
+                    id={"address"}
+                    label={"Delivery address"}
+                    type={"text"}
+                    placeholder={"123 Đường A, Quận B"}
+                    require={true}
+                    formik={formik}
+                  />
+                </div>
+
+                {/* employeeCode removed — defaults to null in payload */}
+
                 <h2 className="pt-3 pb-5 border-t-2 uppercase text-xl">
                   Additional Information
                 </h2>
@@ -218,7 +225,7 @@ const Checkout = () => {
                     value={formik.values.note}
                     className="border w-full p-5 text-xl"
                     name="note"
-                    placeholder="Notes about your order, e.g. special notes for delivery."
+                    placeholder="Giao giờ hành chính"
                     rows={3}
                   ></textarea>
                 </div>
@@ -231,42 +238,155 @@ const Checkout = () => {
               <h2 className="text-xl">YOUR ORDER</h2>
               <div className="w-full border"></div>
               {/* list item */}
-              {listItemCart.map((items) => {
-                const { item } = items;
-                const { image, name, price, quantity, size } = item;
+              {listItemCart.map((item) => {
+                const {
+                  id,
+                  image,
+                  productName,
+                  unitPrice,
+                  quantity,
+                  productCode,
+                  totalAmount,
+                  discountValue
+                } = item;
+
+                // Calculate discounted price (discountValue is percentage)
+                const discountPercent = Number(discountValue) || 0;
+                const discountedPrice =
+                  Number(unitPrice) * (1 - discountPercent);
+                const displayedTotal = Number(quantity) * discountedPrice;
+
                 return (
-                  <div className="flex space-x-5 ">
-                    <img src={image} alt="" className="w-28 h-32" />
+                  <div className="flex space-x-5" key={id || productCode}>
+                    <img
+                      src={buildImageUrl(image)}
+                      alt=""
+                      className="w-28 h-32"
+                    />
                     <div className="flex flex-col space-y-2">
-                      <h2 className="text-xl font-bold">{name}</h2>
+                      <h2 className="text-xl font-bold">{productName}</h2>
                       <p>
-                        {quantity} * {formatVND(price)}
+                        {quantity} *{" "}
+                        {discountPercent > 0 ? (
+                          <span className="flex flex-col">
+                            <span className="line-through text-sm text-gray-400">
+                              {formatVND(unitPrice)}
+                            </span>
+                            <span className="text-green-600">
+                              {formatVND(discountedPrice)}
+                            </span>
+                            <span className="text-xs text-red-500">
+                              -{Math.round(discountPercent * 100)}%
+                            </span>
+                          </span>
+                        ) : (
+                          <span>{formatVND(unitPrice)}</span>
+                        )}
                       </p>
-                      <p>Size: {size}</p>
-                      <p>total: {formatVND(quantity * price)}</p>
+                      <p>total: {formatVND(displayedTotal)}</p>
                     </div>
                   </div>
                 );
               })}
 
               <div className="w-full border"></div>
-              {/* subtotal */}
-              <div className="flex justify-between">
-                <h2>Total price: </h2>
-                <p>{formatVND(totalPrice(listItemCart))}</p>
-              </div>
-              <div className="flex justify-between">
-                <h2>Coupon code: </h2>
-                <p>{coupon?.code}</p>
-              </div>
-              <div className="flex justify-between text-xl uppercase font-bold">
-                <h2>Total: </h2>
-                <p>
-                  {coupon != null && coupon != "unvalid"
-                    ? formatVND(totalPrice(listItemCart) * coupon.value)
-                    : formatVND(totalPrice(listItemCart))}
-                </p>
-              </div>
+              {/* totals and discounts */}
+              {(() => {
+                // Compute original subtotal and discounted subtotal (discountValue is percent)
+                const originalSubtotal =
+                  (listItemCart || []).reduce((acc, it) => {
+                    const unit = Number(it.unitPrice || it.price || 0);
+                    const qty = Number(it.quantity ?? it.qty ?? 1);
+                    return acc + unit * qty;
+                  }, 0) || 0;
+
+                const subtotal =
+                  (listItemCart || []).reduce((acc, it) => {
+                    const unit = Number(it.unitPrice || it.price || 0);
+                    const discountPercent = Number(it.discountValue) || 0;
+                    const discountedPrice = unit * (1 - discountPercent);
+                    const qty = Number(it.quantity ?? it.qty ?? 1);
+                    return acc + discountedPrice * qty;
+                  }, 0) || 0;
+
+                const productDiscountAmount = Math.max(
+                  0,
+                  originalSubtotal - subtotal
+                );
+
+                const memberDiscountPercent =
+                  Number(userInfo?.memberDiscount) || 0;
+                const memberDiscountAmount = Number(
+                  (subtotal * memberDiscountPercent).toFixed(0)
+                );
+                const couponDiscountAmount =
+                  coupon && coupon !== "unvalid" && coupon.value
+                    ? Number((subtotal - subtotal * coupon.value).toFixed(0))
+                    : 0;
+                const finalTotal =
+                  subtotal - memberDiscountAmount - couponDiscountAmount;
+
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <h2>Subtotal: </h2>
+                      <p>{formatVND(subtotal)}</p>
+                    </div>
+
+                    <div>
+                      <h2>Discount: </h2>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2>{userInfo?.customerTypeName}</h2>
+                      <p>
+                        <span className="text-red-500">
+                          -{formatVND(memberDiscountAmount)}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Product-level discounts (from discountValue on items) */}
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2>Product discounts</h2>
+                      <p>
+                        <span className="text-red-500">
+                          -{formatVND(productDiscountAmount)}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2
+                        className={
+                          coupon && coupon !== "unvalid"
+                            ? "font-medium"
+                            : "text-gray-600"
+                        }
+                      >
+                        {coupon && coupon !== "unvalid"
+                          ? coupon.code
+                          : "No coupon"}
+                      </h2>
+                      <p>
+                        {coupon && coupon !== "unvalid" ? (
+                          <span className="text-red-500">
+                            -{formatVND(couponDiscountAmount)}
+                          </span>
+                        ) : (
+                          <span className="text-red-500">-{formatVND(0)}</span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="w-full border"></div>
+
+                    <div className="flex justify-between text-xl uppercase font-bold">
+                      <h2>Total: </h2>
+                      <p>{formatVND(finalTotal)}</p>
+                    </div>
+                  </>
+                );
+              })()}
               <div className="w-full border"></div>
               {/* select box payment */}
               <div>

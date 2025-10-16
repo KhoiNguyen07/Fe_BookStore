@@ -44,7 +44,7 @@ const UserToggle = () => {
   const handleSignInClick = () => {
     setSidebarPosition("right");
     setIsOpenSidebar(true);
-    setTitleSidebar({ icon: "", title: "Sign in" });
+    setTitleSidebar({ icon: "", title: "Sign in", key: "signin" });
   };
 
   return (

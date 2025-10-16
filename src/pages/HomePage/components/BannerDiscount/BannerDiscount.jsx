@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import Button from "~/components/Button/Button";
 import CountdownTimer from "~/components/CountdownTimer/CountdownTimer";
 import { useLanguage } from "~/contexts/LanguageProvider";
+import b1 from "~/assets/images/homepage/discountBanner/b1.webp";
+import b2 from "~/assets/images/homepage/discountBanner/b2.webp";
+import b3 from "~/assets/images/homepage/discountBanner/b3.webp";
 
 const BannerDiscount = () => {
   const [mounted, setMounted] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState("");
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -14,15 +15,7 @@ const BannerDiscount = () => {
     return () => clearTimeout(t);
   }, []);
 
-  const openLightbox = (src) => {
-    setLightboxSrc(src);
-    setLightboxOpen(true);
-  };
-
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-    setLightboxSrc("");
-  };
+  // Lightbox removed — clicks on images will not open a modal
 
   return (
     <section className="relative w-full overflow-hidden pt-60 pb-24 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -86,35 +79,32 @@ const BannerDiscount = () => {
                   : "opacity-0 translate-y-12 scale-95"
               } transition-all duration-1000 ease-out`}
             >
-              {/* Book 1 with enhanced effects */}
+              {/* Book 1 with enhanced effects (B1) */}
               <div className="absolute rotate-6 -left-32 top-20 group">
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
                 <img
-                  src="/product_img/1/3.jpeg"
-                  alt="book-1"
-                  onClick={() => openLightbox("/product_img/1/3.jpeg")}
+                  src={b1}
+                  alt="b1"
                   className="relative w-[280px] shadow-2xl object-cover rounded-xl cursor-pointer transform hover:-translate-y-6 hover:scale-110 hover:rotate-3 transition-all duration-500 ease-out z-10"
                 />
               </div>
 
-              {/* Book 2 with glass morphism effect */}
+              {/* Book 2 with glass morphism effect (B2) */}
               <div className="absolute left-28 top-32 group">
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-pink-500 to-red-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
                 <img
-                  src="/product_img/1/2.jpeg"
-                  alt="book-2"
-                  onClick={() => openLightbox("/product_img/1/2.jpeg")}
+                  src={b1}
+                  alt="b2"
                   className="relative w-[320px] -rotate-6 shadow-2xl object-cover rounded-xl cursor-pointer transform hover:-translate-y-8 hover:scale-110 hover:rotate-0 transition-all duration-700 ease-out z-20"
                 />
               </div>
 
-              {/* Book 3 with premium styling */}
+              {/* Book 3 with premium styling (B3) */}
               <div className="absolute left-40 -top-5 group">
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
                 <img
-                  src="/product_img/1/1.jpeg"
-                  alt="book-3"
-                  onClick={() => openLightbox("/product_img/1/1.jpeg")}
+                  src={b2}
+                  alt="b3"
                   className="relative w-[300px] shadow-2xl object-cover rounded-xl cursor-pointer transform hover:-translate-y-10 hover:scale-115 hover:-rotate-2 transition-all duration-700 ease-out z-30"
                 />
               </div>
@@ -126,13 +116,12 @@ const BannerDiscount = () => {
               <div className="group relative w-full max-w-xs">
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
                 <img
-                  src="/product_img/1/2.jpeg"
+                  src={b2}
                   alt="featured-book"
-                  onClick={() => openLightbox("/product_img/1/2.jpeg")}
                   className="relative w-full h-80 md:h-96 object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-all duration-300 z-10"
                 />
                 <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-3">
+                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-3 flex flex-col items-center">
                     <p className="text-white font-medium text-sm">
                       {t("bannerDiscount.featuredCollection")}
                     </p>
@@ -146,8 +135,8 @@ const BannerDiscount = () => {
               {/* Secondary images row */}
               <div className="flex justify-center items-center gap-4 w-full px-4">
                 {[
-                  { src: "/product_img/1/3.jpeg", label: "Adventure" },
-                  { src: "/product_img/1/1.jpeg", label: "Romance" }
+                  { src: b1, label: "B1" },
+                  { src: b3, label: "B3" }
                 ].map((book, index) => (
                   <div
                     key={index}
@@ -157,14 +146,8 @@ const BannerDiscount = () => {
                     <img
                       src={book.src}
                       alt={`book-${index + 1}`}
-                      onClick={() => openLightbox(book.src)}
                       className="relative w-full h-32 md:h-40 object-cover rounded-xl shadow-lg cursor-pointer transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 z-10"
                     />
-                    <p className="text-center text-xs md:text-sm font-medium text-gray-600 mt-2">
-                      {t(
-                        `bannerDiscount.bookLabels.${book.label.toLowerCase()}`
-                      ) || book.label}
-                    </p>
                   </div>
                 ))}
               </div>
@@ -172,15 +155,13 @@ const BannerDiscount = () => {
           </div>
         </div>
       </div>
-
       {/* Enhanced floating poster */}
       <div className="hidden xl:block absolute right-12 bottom-8 group">
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
         <div className="relative w-64 h-72 overflow-hidden rounded-2xl shadow-2xl transform hover:scale-105 hover:-rotate-2 transition-all duration-500">
           <img
-            src="/product_img/3/1.jpeg"
+            src={b2}
             alt="featured-book"
-            onClick={() => openLightbox("/product_img/3/1.jpeg")}
             className="w-full h-full object-cover cursor-pointer"
           />
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/30 to-transparent"></div>
@@ -194,45 +175,6 @@ const BannerDiscount = () => {
           </div>
         </div>
       </div>
-
-      {/* Enhanced lightbox modal */}
-      {lightboxOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={closeLightbox}
-        >
-          <div
-            className="max-w-5xl max-h-[100vh] p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative bg-white rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={lightboxSrc}
-                alt="preview"
-                className="w-full h-full object-contain"
-              />
-              <button
-                onClick={closeLightbox}
-                className="absolute top-4 right-4 w-12 h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors duration-200"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };

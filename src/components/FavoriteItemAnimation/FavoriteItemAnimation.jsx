@@ -8,14 +8,13 @@ import Loading from "../Loading/Loading";
 const FavoriteItemAnimation = ({ product, p3 = "" }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hearts, setHearts] = useState([]);
-  const [isWishList, setIsWishList] = useState(false);
   const { listItemFavorite, handleFavoriteItem } = useContext(StoreContext);
 
-  useEffect(() => {
-    setIsWishList(handleFavoriteItem(listItemFavorite, product._id));
-  }, [listItemFavorite]);
+  // derive a stable key for the product and compute favorited state directly from store
+  const productKey = product?.productCode || product?._id || product?.id;
+  const isFavorited = handleFavoriteItem(listItemFavorite, productKey);
 
-  const { handleToFavorite } = useAddToFavorite(product, isWishList);
+  const { handleToFavorite } = useAddToFavorite(product, isFavorited);
 
   const handleClick = () => {
     // tạo 4 trái tim nhỏ
@@ -27,8 +26,6 @@ const FavoriteItemAnimation = ({ product, p3 = "" }) => {
     }));
     setHearts((prev) => [...prev, ...newHearts]);
     handleToFavorite();
-
-    setIsWishList(!isWishList);
 
     setIsLoading(true);
     setTimeout(() => {
@@ -44,7 +41,7 @@ const FavoriteItemAnimation = ({ product, p3 = "" }) => {
         onClick={handleClick}
         className={`cursor-pointer relative z-10 ${p3}`}
       >
-        {isWishList ? <FaHeart className="text-black " /> : <FaRegHeart />}
+        {isFavorited ? <FaHeart className="text-black " /> : <FaRegHeart />}
       </span>
 
       {/* Hiệu ứng tim nhỏ */}

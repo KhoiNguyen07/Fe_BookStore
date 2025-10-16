@@ -1,4 +1,5 @@
-import React, { use, useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { buildImageUrl } from "~/lib/utils";
 import { FaRegTrashAlt } from "react-icons/fa";
 
 import InputNumberCustom from "../InputNumberCustom/InputNumberCustom";
@@ -12,16 +13,7 @@ import Loading from "~/components/Loading/Loading";
 import { useNavigate } from "react-router-dom";
 import { useStransferToVND } from "~/hooks/useStransferToVND";
 
-const listCoupon = [
-  {
-    code: "FA20",
-    value: 0.8
-  },
-  {
-    code: "FA50",
-    value: 0.5
-  }
-];
+// coupons list removed — validation should come from backend. Default coupon/discount is null.
 
 const ShoppingCart = () => {
   const { formatVND } = useStransferToVND();
@@ -39,26 +31,38 @@ const ShoppingCart = () => {
     setCurrentTab
   } = useContext(StoreContext);
 
+  console.log(listItemCart);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const inputRef = useRef();
   const { toast } = useContext(ToastifyContext);
   const handleCoupon = (code) => {
-    if (code === "") return null;
-
-    const found = listCoupon.find((item) => item.code === code);
-    return found ? found : "unvalid";
+    // No local coupon list — empty input => null, otherwise mark as unvalid
+    if (!code || code.trim() === "") return null;
+    return "unvalid";
   };
   const deleteCart = (cartId) => {
+    console.log(cartId);
     showConfirmToast({
       message: "Are you sure delete this item?",
       onConfirm: () => {
+        // cartService.deleteCart expects customerCode and productCode
+        const customerCode =
+          userInfo?.customerCode || userInfo?._id || userInfo?.userId || null;
+        if (!customerCode) {
+          toast.error("User not identified. Please login.");
+          return;
+        }
+
         cartService
-          .deleteCart({ cartId })
+          .deleteCart({ customerCode, productCode: cartId })
           .then(() => {
             toast.success("Delete successfully!");
+            fetchCart();
           })
-          .catch();
+          .catch(() => {
+            toast.error("Failed to delete item");
+          });
       }
     });
   };
@@ -66,26 +70,52 @@ const ShoppingCart = () => {
     showConfirmToast({
       message: "Are you sure delete all cart?",
       onConfirm: () => {
-        cartService.deleteAllCart();
+        const customerCode =
+          userInfo?.customerCode || userInfo?._id || userInfo?.userId || null;
+        if (!customerCode) {
+          toast.error("User not identified. Please login.");
+          return;
+        }
+
+        cartService
+          .deleteAllCart(customerCode)
+          .then(() => {
+            toast.success("All items deleted");
+            fetchCart();
+          })
+          .catch(() => {
+            toast.error("Failed to clear cart");
+          });
       }
     });
   };
+  // fetch cart helper
+  const fetchCart = () => {
+    if (!userInfo) {
+      setListItemCart([]);
+      setCountItem(0);
+      return;
+    }
+
+    const customerCode =
+      userInfo?.customerCode || userInfo?._id || userInfo?.userId || null;
+    if (!customerCode) return;
+
+    cartService
+      .getAllCart(customerCode)
+      .then((res) => {
+        const list = res?.data?.data || res?.data || [];
+        setListItemCart(list);
+        setCountItem(totalItem(list));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   useEffect(() => {
-    if (userInfo) {
-      cartService
-        .getAllCart({ userId: userInfo._id })
-        .then((res) => {
-          setListItemCart(res.data);
-          setCountItem(totalItem(res.data));
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else {
-      setCountItem(0);
-    }
-  }, [listItemCart]);
+    fetchCart();
+  }, [userInfo]);
 
   return (
     <>
@@ -109,49 +139,77 @@ const ShoppingCart = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {listItemCart?.map((items) => {
-                    const { item } = items;
-                    const { image, name, price, quantity, size, productId } =
-                      item;
+                  {listItemCart?.map((item) => {
+                    const {
+                      id,
+                      image,
+                      productCode,
+                      productName,
+                      quantity,
+                      totalAmount,
+                      unitPrice,
+                      discountValue
+                    } = item;
+
+                    // Calculate discounted price (discountValue is percentage, e.g., 0.2 = 20%)
+                    const discountPercent = Number(discountValue) || 0;
+                    const discountedPrice =
+                      Number(unitPrice) * (1 - discountPercent);
+                    const displayedTotal = Number(quantity) * discountedPrice;
 
                     return (
                       <tr className="border-b">
                         <td className="py-5">
                           <div className="flex space-x-5 items-start">
-                            <img src={image} className="w-24" alt="product" />
-                            <div className="text-xl">
-                              <h2 className="text-2xl">{name}</h2>
-                              <p>
-                                Size: <span className="text-third">{size}</span>
-                              </p>
-                            </div>
+                            <img
+                              src={buildImageUrl(image)}
+                              className="w-24"
+                              alt="product"
+                            />
                           </div>
                         </td>
                         <td
                           onClick={() => {
-                            deleteCart(items._id);
+                            deleteCart(productCode);
                           }}
                           className="cursor-pointer text-center align-top py-6"
                         >
                           <FaRegTrashAlt />
                         </td>
                         <td className="text-center align-top py-5">
-                          {formatVND(price)}
+                          {discountPercent > 0 ? (
+                            <div className="flex flex-col items-center">
+                              <span className="line-through text-sm text-gray-400">
+                                {formatVND(unitPrice)}
+                              </span>
+                              <span className="text-sm text-green-600">
+                                {formatVND(discountedPrice)}
+                              </span>
+                              <span className="text-xs text-red-500">
+                                -{Math.round(discountPercent * 100)}%
+                              </span>
+                            </div>
+                          ) : (
+                            <span>{formatVND(unitPrice)}</span>
+                          )}
                         </td>
                         <td className="text-center align-top py-5">
-                          {productId.slice(-5)}
+                          {productCode}
                         </td>
                         <td className="text-center align-top py-5">
                           <InputNumberCustom
                             defaultValue={{
                               quantity: quantity,
-                              cartId: items._id
+                              productCode: productCode,
+                              customerCode:
+                                userInfo?.customerCode || userInfo?._id
                             }}
                             inCart={true}
+                            onUpdated={fetchCart}
                           />
                         </td>
                         <td className="text-center align-top py-5">
-                          {formatVND(price * quantity)}
+                          {formatVND(displayedTotal)}
                         </td>
                       </tr>
                     );
@@ -164,19 +222,33 @@ const ShoppingCart = () => {
             <div className="block md:hidden space-y-4">
               <div className="border p-4 rounded-lg">
                 <div className="block md:hidden space-y-4">
-                  {listItemCart?.map((items) => {
-                    const { item } = items;
-                    const { image, name, price, quantity, size, productId } =
-                      item;
+                  {listItemCart?.map((item) => {
+                    const {
+                      image,
+                      productName,
+                      unitPrice,
+                      productCode,
+                      quantity,
+                      id,
+                      totalAmount,
+                      discountValue
+                    } = item;
+
+                    // Calculate discounted price (discountValue is percentage)
+                    const discountPercent = Number(discountValue) || 0;
+                    const discountedPrice =
+                      Number(unitPrice) * (1 - discountPercent);
+                    const displayedTotal = Number(quantity) * discountedPrice;
+
                     return (
                       <>
                         <div
-                          key={productId}
+                          key={id}
                           className="p-4 rounded-lg flex space-x-4 relative"
                         >
                           {/* Hình bên trái */}
                           <img
-                            src={image}
+                            src={buildImageUrl(image)}
                             className="w-24 h-24 object-cover flex-shrink-0"
                             alt="product"
                           />
@@ -184,15 +256,11 @@ const ShoppingCart = () => {
                           {/* Thông tin bên phải */}
                           <div className="flex flex-col space-y-3 flex-1">
                             <h2 className="text-lg font-semibold border-b pb-3 border-dashed">
-                              {name}
+                              {productName}
                             </h2>
 
                             <p className="border-b pb-3 border-dashed">
-                              Size: <span className="text-third">{size}</span>
-                            </p>
-
-                            <p className="border-b pb-3 border-dashed">
-                              SKU: {productId.slice(-5)}
+                              SKU: {productCode}
                             </p>
 
                             <div className="flex items-center pb-3 space-x-2 border-b border-dashed">
@@ -200,21 +268,40 @@ const ShoppingCart = () => {
                               <InputNumberCustom
                                 defaultValue={{
                                   quantity: quantity,
-                                  cartId: items._id
+                                  productCode: productCode,
+                                  customerCode:
+                                    userInfo?.customerCode || userInfo?._id
                                 }}
+                                inCart={true}
+                                onUpdated={fetchCart}
                               />
                               <span className="text-xs">
-                                x {formatVND(price)}
+                                x{" "}
+                                {discountPercent > 0 ? (
+                                  <span className="flex flex-col">
+                                    <span className="line-through text-gray-400">
+                                      {formatVND(unitPrice)}
+                                    </span>
+                                    <span className="text-green-600">
+                                      {formatVND(discountedPrice)}
+                                    </span>
+                                    <span className="text-red-500">
+                                      -{Math.round(discountPercent * 100)}%
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span>{formatVND(unitPrice)}</span>
+                                )}
                               </span>
                             </div>
 
                             <p className="border-b pb-3 border-dashed">
-                              Total: {formatVND(price * quantity)}
+                              Total: {formatVND(displayedTotal)}
                             </p>
                           </div>
                           <div
                             onClick={() => {
-                              deleteCart(items._id);
+                              deleteCart(productCode);
                             }}
                             className="absolute top-0 right-0"
                           >
@@ -287,18 +374,105 @@ const ShoppingCart = () => {
                 <h2>Total price: </h2>
                 <p>{formatVND(totalPrice(listItemCart))}</p>
               </div>
-              <div className="flex justify-between">
-                <h2>Coupon code: </h2>
-                <p>{coupon?.code}</p>
-              </div>
-              <div className="flex justify-between">
-                <h2 className="text-3xl font-bold">TOTAL: </h2>
-                <p className="text-xl font-bold">
-                  {coupon != null && coupon != "unvalid"
-                    ? formatVND(totalPrice(listItemCart) * coupon.value)
-                    : formatVND(totalPrice(listItemCart))}
-                </p>
-              </div>
+              {/* Discounts summary */}
+              {(() => {
+                // Compute original subtotal and discounted subtotal (discountValue is percent)
+                const originalSubtotal =
+                  (listItemCart || []).reduce((acc, it) => {
+                    const unit = Number(it.unitPrice || it.price || 0);
+                    const qty = Number(it.quantity ?? it.qty ?? 1);
+                    return acc + unit * qty;
+                  }, 0) || 0;
+
+                const subtotal =
+                  (listItemCart || []).reduce((acc, it) => {
+                    const unit = Number(it.unitPrice || it.price || 0);
+                    const discountPercent = Number(it.discountValue) || 0;
+                    const discountedPrice = unit * (1 - discountPercent);
+                    const qty = Number(it.quantity ?? it.qty ?? 1);
+                    return acc + discountedPrice * qty;
+                  }, 0) || 0;
+
+                const productDiscountAmount = Math.max(
+                  0,
+                  originalSubtotal - subtotal
+                );
+
+                const memberDiscountPercent =
+                  Number(userInfo?.memberDiscount) || 0; // e.g. 0.1 = 10%
+                const memberDiscountAmount = Number(
+                  (subtotal * memberDiscountPercent).toFixed(0)
+                );
+                const couponDiscountAmount =
+                  coupon && coupon !== "unvalid" && coupon.value
+                    ? Number((subtotal - subtotal * coupon.value).toFixed(0))
+                    : 0;
+                const finalTotal =
+                  subtotal - memberDiscountAmount - couponDiscountAmount;
+
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <h2>Subtotal: </h2>
+                      <p>{formatVND(subtotal)}</p>
+                    </div>
+
+                    <div>
+                      <h2>Discount: </h2>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2>{userInfo?.customerTypeName}</h2>
+                      <p>
+                        <span className="text-red-500">
+                          -{formatVND(memberDiscountAmount)}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Product-level discounts (from discountValue on items) */}
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2>Product discounts</h2>
+                      <p>
+                        <span className="text-red-500">
+                          -{formatVND(productDiscountAmount)}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <h2
+                        className={
+                          coupon && coupon !== "unvalid"
+                            ? "font-medium"
+                            : "text-gray-400"
+                        }
+                      >
+                        {coupon && coupon !== "unvalid"
+                          ? coupon.code
+                          : "No coupon"}
+                      </h2>
+                      <p>
+                        {coupon && coupon !== "unvalid" ? (
+                          <span className="text-red-500">
+                            -{formatVND(couponDiscountAmount)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="w-full border"></div>
+
+                    <div className="flex justify-between text-3xl uppercase font-bold">
+                      <h2>Total: </h2>
+                      <p className="text-xl font-bold">
+                        {formatVND(finalTotal)}
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
               <div className="flex flex-col space-y-3">
                 <div>
                   <Button

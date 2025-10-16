@@ -31,6 +31,7 @@ const contentArr = [
 
 const Cart = () => {
   const { currentTab, setCurrentTab, listItemCart } = useContext(StoreContext);
+
   const [content, setContent] = useState(null);
 
   useEffect(() => {

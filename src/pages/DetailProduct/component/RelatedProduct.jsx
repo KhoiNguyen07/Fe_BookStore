@@ -2,6 +2,7 @@ import React from "react";
 import Product from "~/components/Product/Product";
 
 const RelatedProduct = ({ relativeProduct }) => {
+  console.log(relativeProduct);
   return (
     <div>
       <h2 className="text-3xl text-center">Related Products</h2>

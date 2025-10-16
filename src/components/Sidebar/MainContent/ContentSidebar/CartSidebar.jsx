@@ -12,12 +12,15 @@ const CartSidebar = ({ titleSidebar }) => {
   // store information
   const { userInfo, listItemCart, totalPrice } = useContext(StoreContext);
   const { setIsOpenSidebar } = useContext(SidebarContext);
-  const listItemCartRender = listItemCart ? [...listItemCart].reverse() : null;
+  const safeCartList = Array.isArray(listItemCart) ? listItemCart : [];
+  const listItemCartRender = [...safeCartList].reverse();
   const [hasItems, setHasItems] = useState(false);
   const { formatVND } = useStransferToVND();
 
   useEffect(() => {
-    setHasItems(userInfo && listItemCart && listItemCart.length > 0);
+    setHasItems(
+      userInfo && Array.isArray(listItemCart) && listItemCart.length > 0
+    );
   }, [userInfo, listItemCart]);
 
   return (
@@ -26,13 +29,17 @@ const CartSidebar = ({ titleSidebar }) => {
         <HeaderSidebar titleSidebar={titleSidebar} />
         <div className="flex-1 overflow-y-auto">
           {hasItems ? (
-            listItemCartRender.map((items) => {
-              const { item } = items;
+            listItemCartRender.map((entry, idx) => {
+              // entry may be { _id, item: { ... } } or the item itself
+              const cartId = entry?._id || entry?.id || entry?.cartId || null;
+              const innerItem = entry?.item ? entry.item : entry;
+              const key =
+                cartId || innerItem?.productCode || innerItem?.id || idx;
               return (
                 <ProductItemInSidebar
-                  key={items._id}
-                  item={{ ...item, productId: item.productId.slice(-5) }}
-                  cartId={items._id}
+                  key={key}
+                  item={innerItem}
+                  cartId={cartId}
                 />
               );
             })
@@ -46,7 +53,7 @@ const CartSidebar = ({ titleSidebar }) => {
             <div className="flex justify-between">
               <p>Total price: </p>
               <p className="text-gray-600">
-                {formatVND(totalPrice(listItemCart))}
+                {formatVND(totalPrice(safeCartList))}
               </p>
             </div>
             <div className="space-y-3">

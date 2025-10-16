@@ -6,10 +6,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ToastifyContext } from "~/contexts/ToastifyProvider";
 import { authService } from "~/apis/authService";
+import { cartService } from "~/apis/cartService";
 import { StoreContext } from "~/contexts/StoreProvider";
 
 const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
-  const { setUserInfo, setListItemCart } = useContext(StoreContext);
+  const { setUserInfo, setListItemCart, setCountItem, totalItem } =
+    useContext(StoreContext);
 
   const { toast } = useContext(ToastifyContext);
   const [title, setTitle] = useState(titleSidebar);
@@ -24,17 +26,24 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
     validationSchema: Yup.object({
       email: Yup.string()
         .email("Invalid email!")
-        .required("Email is required!"),
-      username: isRegister
-        ? Yup.string().required("Username is required!")
-        : "",
+        .when([], {
+          is: () => isRegister,
+          then: (schema) => schema.required("Email is required!"),
+          otherwise: (schema) => schema.notRequired()
+        }),
+      username: Yup.string().when([], {
+        is: () => isRegister,
+        then: (schema) => schema.required("Username is required!"),
+        otherwise: (schema) => schema.required("Username is required!")
+      }),
 
       password: Yup.string()
         .min(6, "Password must be at least 6 characters!")
         .required("Password is required!"),
-      cfmpassword: Yup.string().oneOf(
-        [Yup.ref("password"), null],
-        "Password must match"
+      cfmpassword: Yup.string().when("password", (password, schema) =>
+        isRegister
+          ? schema.oneOf([Yup.ref("password"), null], "Password must match")
+          : schema.notRequired()
       )
     }),
     onSubmit: async (values) => {
@@ -44,30 +53,49 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
         await authService
           .createNewUser({ email, password, username })
           .then((res) => {
-            setUserInfo(res.data);
-            toast.success(res.data.message);
+            console.log(res);
+            setUserInfo(res.data.data);
+            toast.success(res.data.data.message);
             setTimeout(() => {
               setIsOpenSidebar(false);
             }, 500);
           })
           .catch((err) => {
-            toast.error(err.response.data.message);
+            console.log("loi roi");
+            toast.error("Login failed!");
           });
       } else {
         await authService
-          .loginAccount({ email, password })
+          .loginAccount({ username, password })
           .then((res) => {
-            setUserInfo(res.data);
+            console.log(res);
+            setUserInfo(res.data.data);
             // lưu userInfo vào localStorage (chuyển sang string)
-            localStorage.setItem("userInfo", JSON.stringify(res.data));
+            localStorage.setItem("userInfo", JSON.stringify(res.data.data));
             toast.success(res.data.message);
             setTimeout(() => {
-              setListItemCart(1);
-              setIsOpenSidebar(false);
+              // After successful login: fetch user's cart from API and populate store
+              const userId = res.data?.data?.customerCode;
+              if (userId) {
+                cartService
+                  .getAllCart(res.data.data)
+                  .then((cartRes) => {
+                    setListItemCart(cartRes.data.data);
+                    // update cart count
+                    setCountItem(totalItem(cartRes.data.data));
+                    setIsOpenSidebar(false);
+                  })
+                  .catch((err) => {
+                    console.error("Error fetching cart after login:", err);
+                    setIsOpenSidebar(false);
+                  });
+              } else {
+                setIsOpenSidebar(false);
+              }
             }, 500);
           })
           .catch((err) => {
-            toast.error(err.response.data.message);
+            toast.error("Login failed!");
           });
       }
 
@@ -88,23 +116,23 @@ const SignInSidebar = ({ titleSidebar, setIsOpenSidebar }) => {
       <HeaderSidebar titleSidebar={title} />
       <form onSubmit={formik.handleSubmit}>
         <div className="w-full">
-          <InputCustom
-            id="email"
-            label={"Email"}
-            type={"text"}
-            require={true}
-            formik={formik}
-          />
-
           {isRegister && (
             <InputCustom
-              id="username"
-              label={"Username"}
+              id="email"
+              label={"Email"}
               type={"text"}
               require={true}
               formik={formik}
             />
           )}
+
+          <InputCustom
+            id="username"
+            label={"Username"}
+            type={"text"}
+            require={true}
+            formik={formik}
+          />
           <InputCustom
             id="password"
             label={"Password"}

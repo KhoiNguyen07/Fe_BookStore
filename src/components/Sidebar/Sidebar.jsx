@@ -21,9 +21,10 @@ const Sidebar = ({
       {shouldRender && (
         <div
           onClick={() => setIsOpenSidebar(false)}
-          className={`sidebar-overlay fixed inset-0 bg-black/50 z-50 ${
+          className={`sidebar-overlay fixed inset-0 bg-black/50 ${
             isOpenSidebar ? "active" : ""
           }`}
+          style={{ zIndex: 220 }}
         ></div>
       )}
 
@@ -32,8 +33,8 @@ const Sidebar = ({
         <div
           className={`${animationClass} fixed top-0 ${
             position === "left" ? "left-0" : "right-0"
-          } h-screen w-[280px] md:w-[350px] z-50 flex flex-col bg-white`}
-          style={{ zIndex: 60 }}
+          } h-screen w-[280px] md:w-[450px] flex flex-col bg-white`}
+          style={{ zIndex: 230 }}
         >
           {/* toggle close */}
           <button

@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import { useLanguage } from "~/contexts/LanguageProvider";
 import { Link } from "react-router-dom";
 import { StoreContext } from "~/contexts/StoreProvider";
 
@@ -15,6 +16,7 @@ const BoxIcon = ({
   setSidebarPosition
 }) => {
   const { countItem, countItemFavor } = useContext(StoreContext);
+  const { t } = useLanguage();
   return (
     <>
       {to ? (
@@ -39,10 +41,15 @@ const BoxIcon = ({
               setSidebarPosition && setSidebarPosition("right");
             }
             setIsOpenSidebar(true);
+            // determine stable key for sidebar content to avoid localization breakage
+            let key = title;
+            if (title === t("nav.cart")) key = "cart";
+            if (title === t("nav.favorite")) key = "favorite";
             setTitleSidebar({
               ...titleSidebar,
               icon: icon,
-              title: title
+              title: title,
+              key
             });
           }}
           className={`p-2 text-xs md:text-lg rounded-full relative ${border} ${bgColor} ${textColor}`}

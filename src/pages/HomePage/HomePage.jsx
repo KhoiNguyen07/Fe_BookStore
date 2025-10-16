@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import BestProducts from "~/pages/HomePage/components/BestProducts/BestProducts";
 import Footer from "~/components/Footer/Footer";
@@ -9,12 +9,13 @@ import BannerDiscount from "./components/BannerDiscount/BannerDiscount";
 import Gallery from "./components/Gallery/Gallery";
 import BlogPreview from "./components/BlogPreview/BlogPreview";
 import Contact from "./components/Contract/Contract";
+import GeminiCustom from "~/components/GeminiCustom/GeminiCustom";
 
 const HomePage = () => {
   return (
     <>
       {/* Header */}
-      <div className="relative  z-40">
+      <div className="relative z-30">
         <section className="absolute top-0 left-0 right-0">
           <Header />
         </section>

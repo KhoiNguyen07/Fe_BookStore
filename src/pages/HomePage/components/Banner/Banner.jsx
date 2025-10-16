@@ -35,7 +35,7 @@ const Banner = () => {
       </div>
 
       {/* SubBanner */}
-      <div className="mx-3 relative z-30">
+      <div className="mx-3 relative z-20">
         <div className="container mt-[-85px] flex flex-wrap bg-black justify-between xl:px-20 xl:py-8">
           {subBannerArr.map((item) => (
             <div

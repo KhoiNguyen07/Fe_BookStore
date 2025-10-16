@@ -1,27 +1,41 @@
-import React, { useEffect, useState } from "react";
-
+import React from "react";
 import { InputNumber } from "antd";
 import { cartService } from "~/apis/cartService";
-const InputNumberCustom = ({ defaultValue, inCart = false, setQuantity }) => {
-  // console.log(id);
-  const onChange = (value) => {
+
+// defaultValue should include { quantity, productCode, customerCode }
+const InputNumberCustom = ({
+  defaultValue,
+  inCart = false,
+  setQuantity,
+  onUpdated
+}) => {
+  const onChange = async (value) => {
     if (inCart) {
       const data = {
-        cartId: defaultValue.cartId,
+        customerCode: defaultValue.customerCode,
+        productCode: defaultValue.productCode,
         quantity: value
       };
 
-      cartService.updateQuantity(data);
+      try {
+        await cartService.updateQuantity(data);
+        // notify parent to refresh cart
+        if (typeof onUpdated === "function") onUpdated();
+      } catch (err) {
+        // silently fail here; parent may show toast if desired
+        console.error("Failed to update quantity", err);
+      }
     } else {
-      setQuantity(value);
+      setQuantity && setQuantity(value);
     }
   };
+
   return (
     <InputNumber
       style={{ borderRadius: 0, width: 60 }}
       min={1}
       max={20}
-      defaultValue={defaultValue.quantity}
+      defaultValue={defaultValue?.quantity}
       onChange={onChange}
     />
   );

@@ -2,27 +2,14 @@ import { useContext, useEffect, useState } from "react";
 import { favoriteService } from "~/apis/favoriteService";
 import { StoreContext } from "~/contexts/StoreProvider";
 import { ToastifyContext } from "~/contexts/ToastifyProvider";
+import { SidebarContext } from "~/contexts/SidebarProvider";
 
 export const useAddToFavorite = (product, isWishList) => {
   const { toast } = useContext(ToastifyContext);
   const [favoriteId, setFavoriteId] = useState(null);
   const { listItemFavorite, setIsOnClickFunction, userInfo } =
     useContext(StoreContext);
-
-  useEffect(() => {
-    const fetchFavorite = async () => {
-      try {
-        const res = await favoriteService.findOneByProductId({
-          productId: product._id
-        });
-        setFavoriteId(res.data?._id);
-      } catch (err) {
-        console.error("Error fetching favorite:", err);
-      }
-    };
-
-    fetchFavorite();
-  }, [listItemFavorite, product._id]);
+  const { setIsOpenSidebar, setTitleSidebar } = useContext(SidebarContext);
 
   const handleToFavorite = async () => {
     try {
@@ -30,24 +17,58 @@ export const useAddToFavorite = (product, isWishList) => {
         if (!userInfo) {
           toast.warning("Must be sign in!");
           setIsOpenSidebar(true);
-          setTitleSidebar((prev) => ({ ...prev, title: "Sign in" }));
+          setTitleSidebar((prev) => ({
+            ...prev,
+            title: "Sign in",
+            key: "signin"
+          }));
           return;
         }
 
-        const data = {
-          userId: userInfo._id,
-          item: {
-            productId: product._id,
-            name: product.name,
-            image: product.images[0],
-            price: product.price
-          }
-        };
+        const customerCode =
+          userInfo?.customerCode ||
+          userInfo?.customer_id ||
+          userInfo?._id ||
+          userInfo?.id;
+        const productCode = product?.productCode || product?._id || product?.id;
 
-        const res = await favoriteService.createItem(data);
-        toast.success(res.data.message);
+        const payload = { customerCode, productCode };
+        const res = await favoriteService.createItem(payload);
+        toast.success(
+          res?.data?.message || res?.data?.data?.message || "Added to favorites"
+        );
       } else {
-        await favoriteService.deleteFavorite({ favoriteId });
+        // delete: prefer using customerCode + productCode so backend can identify the fav entry
+        const customerCode =
+          userInfo?.customerCode ||
+          userInfo?.customer_id ||
+          userInfo?._id ||
+          userInfo?.id;
+        const productCode = product?.productCode || product?._id || product?.id;
+
+        if (customerCode && productCode) {
+          await favoriteService.deleteFavorite({ customerCode, productCode });
+        } else if (favoriteId) {
+          await favoriteService.deleteFavorite({ favoriteId });
+        } else {
+          // try to find favorite in listItemFavorite
+          const foundEntry = (listItemFavorite || []).find((entry) => {
+            const candidate = entry?.item ? entry.item : entry;
+            const pid =
+              candidate?.productCode ||
+              candidate?.productId ||
+              candidate?.id ||
+              candidate?._id;
+            return (
+              pid === (product?.productCode || product?._id || product?.id)
+            );
+          });
+          if (foundEntry) {
+            const fid = foundEntry._id || foundEntry.id || null;
+            if (fid) await favoriteService.deleteFavorite({ favoriteId: fid });
+          }
+        }
+
         toast.success("Delete successfully!");
       }
 
