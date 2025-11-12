@@ -15,7 +15,7 @@ const Modal = ({
     sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",
-    xl: "max-w-4xl",
+    xl: "max-w-7xl",
     full: "max-w-full mx-4"
   };
 

@@ -151,10 +151,18 @@ const ShoppingCart = () => {
                       discountValue
                     } = item;
 
-                    // Calculate discounted price (discountValue is percentage, e.g., 0.2 = 20%)
-                    const discountPercent = Number(discountValue) || 0;
-                    const discountedPrice =
-                      Number(unitPrice) * (1 - discountPercent);
+                    // Calculate discounted price
+                    // If discountValue <= 1 => treat as percentage (e.g., 0.2 = 20%)
+                    // If discountValue > 1 => treat as absolute amount to subtract from unit price
+                    const dv = Number(discountValue) || 0;
+                    let discountedPrice = Number(unitPrice) || 0;
+                    if (dv > 1) {
+                      // absolute discount
+                      discountedPrice = Math.max(0, Number(unitPrice) - dv);
+                    } else if (dv > 0) {
+                      // percentage discount
+                      discountedPrice = Number(unitPrice) * (1 - dv);
+                    }
                     const displayedTotal = Number(quantity) * discountedPrice;
 
                     return (
@@ -177,7 +185,7 @@ const ShoppingCart = () => {
                           <FaRegTrashAlt />
                         </td>
                         <td className="text-center align-top py-5">
-                          {discountPercent > 0 ? (
+                          {dv > 0 ? (
                             <div className="flex flex-col items-center">
                               <span className="line-through text-sm text-gray-400">
                                 {formatVND(unitPrice)}
@@ -186,7 +194,9 @@ const ShoppingCart = () => {
                                 {formatVND(discountedPrice)}
                               </span>
                               <span className="text-xs text-red-500">
-                                -{Math.round(discountPercent * 100)}%
+                                {dv > 1
+                                  ? `-${formatVND(dv)}`
+                                  : `-${Math.round(dv * 100)}%`}
                               </span>
                             </div>
                           ) : (
@@ -234,11 +244,15 @@ const ShoppingCart = () => {
                       discountValue
                     } = item;
 
-                    // Calculate discounted price (discountValue is percentage)
-                    const discountPercent = Number(discountValue) || 0;
-                    const discountedPrice =
-                      Number(unitPrice) * (1 - discountPercent);
-                    const displayedTotal = Number(quantity) * discountedPrice;
+                    // Calculate discounted price
+                    const dv2 = Number(discountValue) || 0;
+                    let discountedPrice2 = Number(unitPrice) || 0;
+                    if (dv2 > 1) {
+                      discountedPrice2 = Math.max(0, Number(unitPrice) - dv2);
+                    } else if (dv2 > 0) {
+                      discountedPrice2 = Number(unitPrice) * (1 - dv2);
+                    }
+                    const displayedTotal = Number(quantity) * discountedPrice2;
 
                     return (
                       <>
@@ -277,16 +291,18 @@ const ShoppingCart = () => {
                               />
                               <span className="text-xs">
                                 x{" "}
-                                {discountPercent > 0 ? (
+                                {dv2 > 0 ? (
                                   <span className="flex flex-col">
                                     <span className="line-through text-gray-400">
                                       {formatVND(unitPrice)}
                                     </span>
                                     <span className="text-green-600">
-                                      {formatVND(discountedPrice)}
+                                      {formatVND(discountedPrice2)}
                                     </span>
                                     <span className="text-red-500">
-                                      -{Math.round(discountPercent * 100)}%
+                                      {dv2 > 1
+                                        ? `-${formatVND(dv2)}`
+                                        : `-${Math.round(dv2 * 100)}%`}
                                     </span>
                                   </span>
                                 ) : (
@@ -387,8 +403,13 @@ const ShoppingCart = () => {
                 const subtotal =
                   (listItemCart || []).reduce((acc, it) => {
                     const unit = Number(it.unitPrice || it.price || 0);
-                    const discountPercent = Number(it.discountValue) || 0;
-                    const discountedPrice = unit * (1 - discountPercent);
+                    const dv = Number(it.discountValue) || 0;
+                    let discountedPrice = unit;
+                    if (dv > 1) {
+                      discountedPrice = Math.max(0, unit - dv);
+                    } else if (dv > 0) {
+                      discountedPrice = unit * (1 - dv);
+                    }
                     const qty = Number(it.quantity ?? it.qty ?? 1);
                     return acc + discountedPrice * qty;
                   }, 0) || 0;

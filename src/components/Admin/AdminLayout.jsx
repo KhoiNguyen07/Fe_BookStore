@@ -11,8 +11,6 @@ import {
   FaWarehouse,
   FaComments,
   FaExchangeAlt,
-  FaChevronDown,
-  FaChevronRight,
   FaBars,
   FaTimes,
   FaUserShield,
@@ -25,85 +23,69 @@ import {
   FaShoppingBag,
   FaClipboardList,
   FaChartLine,
-  FaHistory
+  FaHistory,
+  FaCashRegister
 } from "react-icons/fa";
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedMenus, setExpandedMenus] = useState({});
   const location = useLocation();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const toggleMenu = (menuKey) => {
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [menuKey]: !prev[menuKey]
-    }));
-  };
-
-  const menuItems = [
+  const menuSections = [
     {
-      key: "dashboard",
       title: "Dashboard",
-      icon: FaTachometerAlt,
-      path: "/admin",
-      exact: true
+      items: [
+        {
+          title: "Dashboard",
+          icon: FaTachometerAlt,
+          path: "/admin",
+          exact: true
+        }
+      ]
     },
     {
-      key: "accounts",
+      title: "Bán hàng",
+      items: [
+        {
+          title: "POS - Bán hàng",
+          icon: FaCashRegister,
+          path: "/admin/pos"
+        }
+      ]
+    },
+    {
       title: "Quản lý tài khoản",
-      icon: FaUserShield,
-      children: [
+      items: [
         { title: "Roles", path: "/admin/roles", icon: FaIdCard },
         { title: "Accounts", path: "/admin/accounts", icon: FaUsers }
       ]
     },
     {
-      key: "customers",
-      title: "Quản lý khách hàng",
-      icon: FaUserFriends,
-      children: [
+      title: "Khách hàng & Nhân viên",
+      items: [
         {
           title: "Customer Types",
           path: "/admin/customer-types",
           icon: FaTags
         },
-        { title: "Customers", path: "/admin/customers", icon: FaUsers }
+        { title: "Customers", path: "/admin/customers", icon: FaUsers },
+        { title: "Nhân viên", path: "/admin/employees", icon: FaUserTie },
+        { title: "Nhà cung cấp", path: "/admin/suppliers", icon: FaTruck }
       ]
     },
     {
-      key: "employees",
-      title: "Nhân viên",
-      icon: FaUserTie,
-      path: "/admin/employees"
-    },
-    {
-      key: "suppliers",
-      title: "Nhà cung cấp",
-      icon: FaTruck,
-      path: "/admin/suppliers"
-    },
-    {
-      key: "products",
-      title: "Quản lý sản phẩm",
-      icon: FaBoxes,
-      children: [
+      title: "Sản phẩm & Khuyến mãi",
+      items: [
         {
           title: "Categories",
           path: "/admin/product-categories",
           icon: FaLayerGroup
         },
-        { title: "Products", path: "/admin/products", icon: FaBoxes }
-      ]
-    },
-    {
-      key: "promotions",
-      title: "Khuyến mãi",
-      icon: FaPercent,
-      children: [
+        { title: "Products", path: "/admin/products", icon: FaBoxes },
         {
           title: "Promotion Types",
           path: "/admin/promotion-types",
@@ -113,23 +95,14 @@ const AdminLayout = ({ children }) => {
       ]
     },
     {
-      key: "orders",
-      title: "Đơn hàng",
-      icon: FaShoppingCart,
-      children: [
+      title: "Đơn hàng & Kho",
+      items: [
         { title: "Orders", path: "/admin/orders", icon: FaShoppingCart },
         {
           title: "Promotion Orders",
           path: "/admin/promotion-orders",
           icon: FaTags
-        }
-      ]
-    },
-    {
-      key: "imports",
-      title: "Nhập hàng",
-      icon: FaFileInvoice,
-      children: [
+        },
         {
           title: "Import Invoices",
           path: "/admin/import-invoices",
@@ -139,14 +112,7 @@ const AdminLayout = ({ children }) => {
           title: "Import Details",
           path: "/admin/import-details",
           icon: FaClipboardList
-        }
-      ]
-    },
-    {
-      key: "inventory",
-      title: "Kho hàng",
-      icon: FaWarehouse,
-      children: [
+        },
         { title: "Inventory", path: "/admin/inventory", icon: FaWarehouse },
         {
           title: "Price History",
@@ -156,10 +122,8 @@ const AdminLayout = ({ children }) => {
       ]
     },
     {
-      key: "others",
       title: "Khác",
-      icon: FaStar,
-      children: [
+      items: [
         { title: "Comments", path: "/admin/comments", icon: FaComments },
         { title: "Carts", path: "/admin/carts", icon: FaShoppingBag },
         { title: "Favorites", path: "/admin/favorites", icon: FaStar },
@@ -180,106 +144,160 @@ const AdminLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex overflow-hidden">
+      {/* Floating toggle when sidebar is collapsed so user can re-open it */}
+      {!sidebarOpen && (
+        <button
+          onClick={toggleSidebar}
+          aria-label="Mở sidebar"
+          className="fixed top-4 left-2 z-50 p-2 bg-blue-600 text-white rounded-lg shadow-xl hover:bg-blue-700 transition-transform transform hover:scale-105"
+        >
+          <FaBars />
+        </button>
+      )}
       {/* Sidebar */}
       <div
-        className={`bg-gray-900 text-white transition-all duration-300 ${
-          sidebarOpen ? "w-64" : "w-16"
-        } flex-shrink-0`}
+        className={`bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white transition-all duration-500 ease-in-out transform ${
+          sidebarOpen ? "w-72" : "w-16"
+        } flex-shrink-0 h-full overflow-y-auto shadow-2xl border-r border-slate-700/50`}
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="p-4">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
           <div className="flex items-center justify-between">
-            <h1
-              className={`font-bold text-xl ${
-                sidebarOpen ? "block" : "hidden"
+            <div
+              className={`transition-all duration-300 ${
+                sidebarOpen ? "opacity-100" : "opacity-0"
               }`}
             >
-              BookStore Admin
-            </h1>
+              <h1 className="font-bold text-xl bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                BookStore Admin
+              </h1>
+              <p className="text-slate-400 text-xs mt-1">Quản lý cửa hàng</p>
+            </div>
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
             >
-              {sidebarOpen ? <FaTimes /> : <FaBars />}
+              {sidebarOpen ? (
+                <FaTimes className="text-lg" />
+              ) : (
+                <FaBars className="text-lg" />
+              )}
             </button>
           </div>
         </div>
 
-        <nav className="mt-4">
-          {menuItems.map((item) => (
-            <div key={item.key}>
-              {item.children ? (
-                <div>
-                  <button
-                    onClick={() => toggleMenu(item.key)}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800 transition-colors ${
-                      sidebarOpen ? "" : "justify-center"
-                    }`}
+        {/* Navigation */}
+        <nav className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-600">
+          {menuSections.map((section, sectionIndex) => (
+            <div key={section.title} className="mb-8">
+              {/* Section Title */}
+              {sidebarOpen && (
+                <div className="px-6 mb-3">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {section.title}
+                  </h3>
+                  <div className="mt-1 h-px bg-gradient-to-r from-slate-600 to-transparent"></div>
+                </div>
+              )}
+
+              {/* Section Items */}
+              <div className="space-y-1 px-3">
+                {section.items.map((item, itemIndex) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`group flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
+                      isActiveLink(item.path, item.exact)
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
+                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                    } ${!sidebarOpen ? "justify-center" : ""}`}
+                    style={{
+                      animationDelay: `${sectionIndex * 100 + itemIndex * 50}ms`
+                    }}
                   >
-                    <div className="flex items-center">
-                      <item.icon className="text-lg" />
+                    <div
+                      className={`flex items-center ${
+                        isActiveLink(item.path, item.exact)
+                          ? "text-white"
+                          : "text-slate-400 group-hover:text-blue-400"
+                      } transition-colors duration-300`}
+                    >
+                      <item.icon
+                        className={`${
+                          sidebarOpen ? "text-lg" : "text-xl"
+                        } transition-all duration-300`}
+                      />
                       {sidebarOpen && (
-                        <span className="ml-3">{item.title}</span>
+                        <span className="ml-3 transition-all duration-300 group-hover:translate-x-1">
+                          {item.title}
+                        </span>
                       )}
                     </div>
-                    {sidebarOpen &&
-                      (expandedMenus[item.key] ? (
-                        <FaChevronDown />
-                      ) : (
-                        <FaChevronRight />
-                      ))}
-                  </button>
-                  {expandedMenus[item.key] && sidebarOpen && (
-                    <div className="bg-gray-800">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.path}
-                          to={child.path}
-                          className={`flex items-center px-8 py-2 text-sm hover:bg-gray-700 transition-colors ${
-                            isActiveLink(child.path) ? "bg-blue-600" : ""
-                          }`}
-                        >
-                          <child.icon className="text-sm mr-3" />
-                          {child.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  to={item.path}
-                  className={`flex items-center px-4 py-3 hover:bg-gray-800 transition-colors ${
-                    isActiveLink(item.path, item.exact) ? "bg-blue-600" : ""
-                  } ${sidebarOpen ? "" : "justify-center"}`}
-                >
-                  <item.icon className="text-lg" />
-                  {sidebarOpen && <span className="ml-3">{item.title}</span>}
-                </Link>
-              )}
+                    {/* Active indicator */}
+                    {isActiveLink(item.path, item.exact) && (
+                      <div className="ml-auto">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
             </div>
           ))}
         </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-700/50 bg-slate-800/50">
+          <div
+            className={`flex items-center ${
+              !sidebarOpen ? "justify-center" : ""
+            }`}
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+              A
+            </div>
+            {sidebarOpen && (
+              <div className="ml-3">
+                <p className="text-sm font-medium text-white">Admin</p>
+                <p className="text-xs text-slate-400">Quản trị viên</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Top Navbar */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-6 py-4">
+        <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50">
+          <div className="px-8 py-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                {location.pathname === "/admin"
-                  ? "Dashboard"
-                  : location.pathname
-                      .split("/")
-                      .pop()
-                      .replace("-", " ")
-                      .toUpperCase()}
-              </h2>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">Welcome, Admin</span>
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                  {location.pathname === "/admin"
+                    ? "Dashboard"
+                    : location.pathname
+                        .split("/")
+                        .pop()
+                        .replace("-", " ")
+                        .toUpperCase()}
+                </h2>
+                <p className="text-gray-500 mt-1">
+                  {location.pathname === "/admin"
+                    ? "Tổng quan hệ thống"
+                    : "Quản lý dữ liệu"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600">Welcome back,</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    Admin
+                  </span>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   A
                 </div>
               </div>
@@ -287,8 +305,12 @@ const AdminLayout = ({ children }) => {
           </div>
         </header>
 
-        {/* Content Area */}
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        {/* Content Area (scrolls) */}
+        <main className="flex-1 p-8 overflow-auto bg-gradient-to-br from-gray-50/50 to-white/50">
+          <div className="animate-in slide-in-from-bottom-4 duration-500">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

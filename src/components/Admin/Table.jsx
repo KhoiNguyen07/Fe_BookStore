@@ -47,7 +47,7 @@ const Table = ({
                 onClick={() => column.sortable && handleSort(column.key)}
               >
                 <div className="flex items-center space-x-1">
-                  <span>{column.title}</span>
+                  <span>{column.title || column.label}</span>
                   {column.sortable && getSortIcon(column.key)}
                 </div>
               </th>
@@ -78,7 +78,8 @@ const Table = ({
                 {columns.map((column) => (
                   <td key={column.key} className="px-6 py-4 whitespace-nowrap">
                     {column.render ? (
-                      column.render(row[column.key], row)
+                      // Prefer passing the whole row to the render function (many column.render implementations expect the full item)
+                      column.render(row, index)
                     ) : (
                       <div className="text-sm text-gray-900">
                         {row[column.key]}

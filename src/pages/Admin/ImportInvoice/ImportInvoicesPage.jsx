@@ -31,6 +31,7 @@ import {
 import { importInvoiceService } from "~/apis/importInvoiceService";
 import { supplierService } from "~/apis/supplierService";
 import { productService } from "~/apis/productService";
+import { buildImageUrl } from "~/lib/utils";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "~/components/Admin/AdminLayout";
 import Modal from "~/components/Admin/Modal";
@@ -59,6 +60,14 @@ const ImportInvoicesPage = () => {
   const [invoiceItems, setInvoiceItems] = useState([
     { importInvoiceDetailCode: "", productCode: "", quantity: 1, unitPrice: 0 }
   ]);
+
+  // Display mode state
+  const [displayMode, setDisplayMode] = useState("supplier-first"); // "supplier-first" or "product-first"
+  const [selectedSupplierCode, setSelectedSupplierCode] = useState("");
+  const [selectedProductCode, setSelectedProductCode] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [filteredSuppliers, setFilteredSuppliers] = useState([]);
+
   // helper to convert API datetime/string to yyyy-mm-dd for <input type="date">
   const formatToDateInput = (value) => {
     if (!value) return "";
@@ -252,7 +261,21 @@ const ImportInvoicesPage = () => {
   const loadSuppliers = async () => {
     try {
       const response = await supplierService.getAllSuppliers();
-      setSuppliers(response?.data?.data || response?.data || []);
+      let suppliersData = response?.data?.data || response?.data || [];
+      // normalize status to boolean so UI can reliably filter active suppliers
+      suppliersData = suppliersData.map((s) => ({
+        ...s,
+        status: (() => {
+          if (typeof s.status === "boolean") return s.status;
+          // check common active indicators
+          const raw = (s.status ?? s.active ?? "")
+            .toString()
+            .trim()
+            .toLowerCase();
+          return raw === "true" || raw === "1" || raw === "active";
+        })()
+      }));
+      setSuppliers(suppliersData);
     } catch (error) {
       console.error("Error loading suppliers:", error);
     }
@@ -264,6 +287,59 @@ const ImportInvoicesPage = () => {
       setProducts(response?.data?.data || response?.data || []);
     } catch (error) {
       console.error("Error loading products:", error);
+    }
+  };
+
+  // Load products for selected supplier
+  const loadProductsForSupplier = async (supplierCode) => {
+    if (!supplierCode) {
+      setFilteredProducts([]);
+      return;
+    }
+
+    try {
+      const supplier = suppliers.find((s) => s.supplierCode === supplierCode);
+      if (supplier && supplier.productProvide) {
+        // Get product codes from supplier's productProvide
+        const productCodes = supplier.productProvide.map(
+          (pp) => pp.productCode
+        );
+        // Filter products that this supplier provides
+        const supplierProducts = products.filter((p) =>
+          productCodes.includes(p.productCode || p.code || p.id)
+        );
+        setFilteredProducts(supplierProducts);
+      } else {
+        // Fallback: show all products if no productProvide data
+        setFilteredProducts(products);
+      }
+    } catch (error) {
+      console.error("Error loading products for supplier:", error);
+      setFilteredProducts([]);
+    }
+  };
+
+  // Load suppliers for selected product
+  const loadSuppliersForProduct = async (productCode) => {
+    if (!productCode) {
+      setFilteredSuppliers([]);
+      return;
+    }
+
+    try {
+      // Find suppliers that provide this product
+      const productSuppliers = suppliers.filter((supplier) => {
+        if (supplier.productProvide && Array.isArray(supplier.productProvide)) {
+          return supplier.productProvide.some(
+            (pp) => pp.productCode === productCode
+          );
+        }
+        return false;
+      });
+      setFilteredSuppliers(productSuppliers);
+    } catch (error) {
+      console.error("Error loading suppliers for product:", error);
+      setFilteredSuppliers([]);
     }
   };
 
@@ -417,6 +493,14 @@ const ImportInvoicesPage = () => {
 
   // Add a new empty item row (only used when creating a new invoice)
   const addInvoiceItem = () => {
+    // Prevent adding new rows when using product-first mode
+    if (displayMode === "product-first") {
+      showErrorModal(
+        "Không thể thêm sản phẩm",
+        "Khi đã chọn sản phẩm trước, không thể thêm dòng sản phẩm mới."
+      );
+      return;
+    }
     // generate detail code if creating new invoice
     const genDetailCode = `CTPN_${Date.now()}`;
     setInvoiceItems([
@@ -629,6 +713,79 @@ const ImportInvoicesPage = () => {
     loadProducts();
   }, []);
 
+  // When in product-first mode and a product is selected, ensure every invoice item uses that productCode
+  useEffect(() => {
+    if (
+      !editingInvoice &&
+      displayMode === "product-first" &&
+      selectedProductCode
+    ) {
+      setInvoiceItems((prev) =>
+        prev.map((it) => ({
+          ...it,
+          productCode: selectedProductCode
+        }))
+      );
+
+      // If supplier already selected, try to prefill unitPrice from supplier.productProvide
+      if (selectedSupplierCode) {
+        const supplier = suppliers.find(
+          (s) => s.supplierCode === selectedSupplierCode
+        );
+        if (supplier && supplier.productProvide) {
+          const pp = supplier.productProvide.find(
+            (p) => p.productCode === selectedProductCode
+          );
+          if (pp && pp.importPrice) {
+            setInvoiceItems((prev) =>
+              prev.map((it) => ({ ...it, unitPrice: pp.importPrice }))
+            );
+          }
+        }
+      }
+    }
+  }, [
+    selectedProductCode,
+    displayMode,
+    editingInvoice,
+    selectedSupplierCode,
+    suppliers
+  ]);
+
+  // When selected supplier changes in product-first mode, update unitPrice for items that match selectedProductCode
+  useEffect(() => {
+    if (
+      !editingInvoice &&
+      displayMode === "product-first" &&
+      selectedSupplierCode &&
+      selectedProductCode
+    ) {
+      const supplier = suppliers.find(
+        (s) => s.supplierCode === selectedSupplierCode
+      );
+      if (supplier && supplier.productProvide) {
+        const pp = supplier.productProvide.find(
+          (p) => p.productCode === selectedProductCode
+        );
+        if (pp) {
+          setInvoiceItems((prev) =>
+            prev.map((it) =>
+              it.productCode === selectedProductCode
+                ? { ...it, unitPrice: pp.importPrice || it.unitPrice }
+                : it
+            )
+          );
+        }
+      }
+    }
+  }, [
+    selectedSupplierCode,
+    selectedProductCode,
+    displayMode,
+    editingInvoice,
+    suppliers
+  ]);
+
   // Status constants (match API)
   const STATUS = {
     PENDING: "PENDING",
@@ -709,6 +866,11 @@ const ImportInvoicesPage = () => {
                       unitPrice: 0
                     }
                   ]);
+                  // Reset display mode state
+                  setSelectedSupplierCode("");
+                  setSelectedProductCode("");
+                  setFilteredProducts([]);
+                  setFilteredSuppliers([]);
                   setIsModalOpen(true);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -1045,6 +1207,77 @@ const ImportInvoicesPage = () => {
           size="xl"
         >
           <form onSubmit={handleSaveInvoice} className="space-y-6">
+            {/* Display Mode Toggle - only show when creating new invoice */}
+            {!editingInvoice && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Chọn cách tạo hóa đơn
+                </label>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDisplayMode("supplier-first");
+                      setSelectedSupplierCode("");
+                      setSelectedProductCode("");
+                      setFilteredProducts([]);
+                      setFilteredSuppliers([]);
+                    }}
+                    aria-pressed={displayMode === "supplier-first"}
+                    className={`flex items-start gap-3 p-4 rounded-lg transition-shadow border ${
+                      displayMode === "supplier-first"
+                        ? "ring-2 ring-blue-500 bg-white border-blue-200 shadow-sm"
+                        : "bg-gray-50 hover:bg-gray-100 border-transparent"
+                    }`}
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded bg-blue-50 text-blue-600">
+                      <FaTruck />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">
+                        Chọn nhà cung cấp trước
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Chọn NCC rồi chọn sản phẩm mà NCC này cung cấp. Thích
+                        hợp khi bạn đã biết NCC.
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDisplayMode("product-first");
+                      setSelectedSupplierCode("");
+                      setSelectedProductCode("");
+                      setFilteredProducts([]);
+                      setFilteredSuppliers([]);
+                    }}
+                    aria-pressed={displayMode === "product-first"}
+                    className={`flex items-start gap-3 p-4 rounded-lg transition-shadow border ${
+                      displayMode === "product-first"
+                        ? "ring-2 ring-green-500 bg-white border-green-200 shadow-sm"
+                        : "bg-gray-50 hover:bg-gray-100 border-transparent"
+                    }`}
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded bg-green-50 text-green-600">
+                      <FaBoxes />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">
+                        Chọn sản phẩm trước
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Chọn sản phẩm rồi chọn NCC cung cấp. Thích hợp khi bạn
+                        biết sản phẩm cần nhập.
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1063,27 +1296,108 @@ const ImportInvoicesPage = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nhà cung cấp *
-                </label>
-                <select
-                  name="supplierCode"
-                  defaultValue={editingInvoice?.supplierCode || ""}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Chọn nhà cung cấp</option>
-                  {suppliers.map((supplier) => (
-                    <option
-                      key={supplier.supplierCode}
-                      value={supplier.supplierCode}
-                    >
-                      {supplier.supplierName} ({supplier.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Conditional rendering based on display mode */}
+              {editingInvoice || displayMode === "supplier-first" ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nhà cung cấp *
+                  </label>
+                  <select
+                    name="supplierCode"
+                    value={
+                      editingInvoice
+                        ? editingInvoice.supplierCode || ""
+                        : selectedSupplierCode
+                    }
+                    onChange={(e) => {
+                      const supplierCode = e.target.value;
+                      setSelectedSupplierCode(supplierCode);
+                      if (!editingInvoice) {
+                        loadProductsForSupplier(supplierCode);
+                      }
+                    }}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Chọn nhà cung cấp</option>
+                    {(editingInvoice
+                      ? suppliers
+                      : suppliers.filter((s) => s && s.status === true)
+                    ).map((supplier) => (
+                      <option
+                        key={supplier.supplierCode}
+                        value={supplier.supplierCode}
+                      >
+                        {supplier.supplierName} ({supplier.email})
+                      </option>
+                    ))}
+                  </select>
+                  {!editingInvoice && selectedSupplierCode && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      Sản phẩm bên dưới sẽ hiển thị từ nhà cung cấp đã chọn
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Chọn sản phẩm để xem nhà cung cấp *
+                  </label>
+                  <select
+                    value={selectedProductCode}
+                    onChange={(e) => {
+                      const productCode = e.target.value;
+                      setSelectedProductCode(productCode);
+                      loadSuppliersForProduct(productCode);
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Chọn sản phẩm</option>
+                    {products.map((product) => (
+                      <option
+                        key={product.productCode || product.code || product.id}
+                        value={
+                          product.productCode || product.code || product.id
+                        }
+                      >
+                        {product.productName || product.name} (
+                        {product.productCode || product.code})
+                      </option>
+                    ))}
+                  </select>
+                  {selectedProductCode && filteredSuppliers.length > 0 && (
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nhà cung cấp cho sản phẩm này:
+                      </label>
+                      <select
+                        name="supplierCode"
+                        value={selectedSupplierCode}
+                        onChange={(e) =>
+                          setSelectedSupplierCode(e.target.value)
+                        }
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Chọn nhà cung cấp</option>
+                        {filteredSuppliers.map((supplier) => (
+                          <option
+                            key={supplier.supplierCode}
+                            value={supplier.supplierCode}
+                          >
+                            {supplier.supplierName} ({supplier.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {selectedProductCode && filteredSuppliers.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Không có nhà cung cấp nào cho sản phẩm này
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1141,7 +1455,7 @@ const ImportInvoicesPage = () => {
                   Chi tiết sản phẩm
                 </h3>
                 {/* Show add button only when creating a new invoice (not when editing) */}
-                {!editingInvoice && (
+                {!editingInvoice && displayMode !== "product-first" && (
                   <button
                     type="button"
                     onClick={addInvoiceItem}
@@ -1189,27 +1503,139 @@ const ImportInvoicesPage = () => {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <select
-                            value={item.productCode}
-                            onChange={(e) =>
-                              updateInvoiceItem(
-                                index,
-                                "productCode",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          >
-                            <option value="">Chọn sản phẩm</option>
-                            {products.map((product) => (
-                              <option
-                                key={product.productCode}
-                                value={product.productCode}
+                          {!editingInvoice &&
+                          displayMode === "product-first" ? (
+                            // When product-first, show chosen product as static text
+                            (() => {
+                              const code =
+                                item.productCode || selectedProductCode || "";
+                              const prod =
+                                products.find(
+                                  (p) =>
+                                    (p.productCode || p.code || p.id) === code
+                                ) || {};
+                              const name =
+                                prod.productName || prod.name || code;
+                              return (
+                                <div className="flex items-center gap-3">
+                                  {prod.image ? (
+                                    <img
+                                      src={buildImageUrl(prod.image)}
+                                      alt={name}
+                                      className="w-12 h-12 object-cover rounded"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-500">
+                                      No Img
+                                    </div>
+                                  )}
+                                  <div className="text-sm text-gray-900">
+                                    <div className="font-medium">{name}</div>
+                                    {code && (
+                                      <div className="text-xs text-gray-500">
+                                        {code}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              {(() => {
+                                // show thumbnail for currently selected product in this row (if any)
+                                const selCode = item.productCode || "";
+                                const selProd =
+                                  products.find(
+                                    (p) =>
+                                      (p.productCode || p.code || p.id) ===
+                                      selCode
+                                  ) || {};
+                                return selProd.image ? (
+                                  <img
+                                    src={buildImageUrl(selProd.image)}
+                                    alt={
+                                      selProd.productName ||
+                                      selProd.name ||
+                                      selCode
+                                    }
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-500">
+                                    No Img
+                                  </div>
+                                );
+                              })()}
+
+                              <select
+                                value={item.productCode}
+                                onChange={(e) => {
+                                  const productCode = e.target.value;
+                                  updateInvoiceItem(
+                                    index,
+                                    "productCode",
+                                    productCode
+                                  );
+
+                                  // Auto-fill import price from supplier's productProvide if available
+                                  if (selectedSupplierCode && productCode) {
+                                    const supplier = suppliers.find(
+                                      (s) =>
+                                        s.supplierCode === selectedSupplierCode
+                                    );
+                                    if (supplier && supplier.productProvide) {
+                                      const productProvide =
+                                        supplier.productProvide.find(
+                                          (pp) => pp.productCode === productCode
+                                        );
+                                      if (
+                                        productProvide &&
+                                        productProvide.importPrice
+                                      ) {
+                                        updateInvoiceItem(
+                                          index,
+                                          "unitPrice",
+                                          productProvide.importPrice
+                                        );
+                                      }
+                                    }
+                                  }
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                               >
-                                {product.productName} ({product.productCode})
-                              </option>
-                            ))}
-                          </select>
+                                <option value="">Chọn sản phẩm</option>
+                                {/* Use filtered products if available, otherwise use all products */}
+                                {(!editingInvoice &&
+                                displayMode === "supplier-first" &&
+                                filteredProducts.length > 0
+                                  ? filteredProducts
+                                  : !editingInvoice &&
+                                    displayMode === "product-first" &&
+                                    selectedProductCode
+                                  ? products.filter(
+                                      (p) =>
+                                        (p.productCode || p.code || p.id) ===
+                                        selectedProductCode
+                                    )
+                                  : products
+                                ).map((product) => {
+                                  const code =
+                                    product.productCode ||
+                                    product.code ||
+                                    product.id ||
+                                    "";
+                                  const name =
+                                    product.productName || product.name || "";
+                                  return (
+                                    <option key={code} value={code}>
+                                      {name} ({code})
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <input

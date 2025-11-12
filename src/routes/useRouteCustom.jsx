@@ -14,7 +14,7 @@ import AccountsPage from "~/pages/Admin/AccountsPage";
 import CustomerTypesPage from "~/pages/Admin/CustomerTypesPage";
 import CustomersPage from "~/pages/Admin/CustomersPage";
 import SuppliersPage from "~/pages/Admin/Supplier/SuppliersPage";
-import ProductCategoriesPage from "~/pages/Admin/ProductCategoriesPage";
+import ProductCategoriesPage from "~/pages/Admin/ProductCategories/ProductCategoriesPage";
 import ProductsPage from "~/pages/Admin/Product/ProductsPage";
 import PriceHistoryPage from "~/pages/Admin/PriceHistory/PriceHistoryPage";
 import WarehousePage from "~/pages/Admin/Warehouse/WarehousePage";
@@ -22,6 +22,9 @@ import OrdersPage from "~/pages/Admin/OrdersPage";
 import ImportInvoicesPage from "~/pages/Admin/ImportInvoice/ImportInvoicesPage";
 import AdminApprovalPage from "~/pages/Admin/ImportInvoice/AdminApprovalPage";
 import ImportInvoicePrint from "~/pages/Admin/ImportInvoice/ImportInvoicePrint";
+import PromotionTypesPage from "~/pages/Admin/PromotionTypes/PromotionTypesPage";
+import PromotionsPage from "~/pages/Admin/Promotions/PromotionsPage";
+import POSPage from "~/pages/Admin/POS/POSPage";
 
 const useRouteCustom = () => {
   const elements = useRoutes([
@@ -52,6 +55,10 @@ const useRouteCustom = () => {
     {
       path: path.Order,
       element: <Order />
+    },
+    {
+      path: path.POS,
+      element: <POSPage />
     },
     {
       path: path.Admin,
@@ -96,6 +103,14 @@ const useRouteCustom = () => {
     {
       path: path.AdminOrders,
       element: <OrdersPage />
+    },
+    {
+      path: path.AdminPromotionTypes,
+      element: <PromotionTypesPage />
+    },
+    {
+      path: path.AdminPromotions,
+      element: <PromotionsPage />
     },
     {
       path: path.AdminImportInvoices,
